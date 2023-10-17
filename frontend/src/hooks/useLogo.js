@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import usePrefersDarkMode from "./usePrefersDarkMode";
 import System from "../models/system";
-import AnythingLLMDark from "../media/logo/preeminent-academy-dark.png";
-import AnythingLLMLight from "../media/logo/preeminent-academy-light.png";
+import PreeminnetAcademyDark from "../media/logo/preeminent-academy-dark.png";
+import PreeminnetAcademyLight from "../media/logo/preeminent-academy-light.png";
 
 export default function useLogo() {
   const [logo, setLogo] = useState("");
@@ -14,9 +14,9 @@ export default function useLogo() {
         const logoURL = await System.fetchLogo(!prefersDarkMode);
         logoURL
           ? setLogo(logoURL)
-          : setLogo(prefersDarkMode ? AnythingLLMLight : AnythingLLMDark);
+          : setLogo(prefersDarkMode ? PreeminnetAcademyLight : PreeminnetAcademyDark);
       } catch (err) {
-        setLogo(prefersDarkMode ? AnythingLLMLight : AnythingLLMDark);
+        setLogo(prefersDarkMode ? PreeminnetAcademyLight : PreeminnetAcademyDark);
         console.error("Failed to fetch logo:", err);
       }
     }

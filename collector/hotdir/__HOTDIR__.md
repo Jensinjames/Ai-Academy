@@ -1,6 +1,6 @@
 ### What is the "Hot directory"
 
-This is the location where you can dump all supported file types and have them automatically converted and prepared to be digested by the vectorizing service and selected from the AnythingLLM frontend.
+This is the location where you can dump all supported file types and have them automatically converted and prepared to be digested by the vectorizing service and selected from the PreeminnetAcademy frontend.
 
 Files dropped in here will only be processed when you are running `python watch.py` from the `collector` directory.
 

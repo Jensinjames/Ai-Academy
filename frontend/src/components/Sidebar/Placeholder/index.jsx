@@ -36,7 +36,7 @@ export default function Sidebar() {
           {/* Header Information */}
           <div className="flex w-full items-center justify-between">
             <p className="text-xl font-base text-slate-600 dark:text-slate-200">
-              AnythingLLM
+              PreeminnetAcademy
             </p>
             <div className="flex gap-x-2 items-center text-slate-500">
               <button className="transition-all duration-300 p-2 rounded-full bg-slate-200 text-slate-400 dark:bg-stone-800 hover:bg-slate-800 hover:text-slate-200 dark:hover:text-slate-200">

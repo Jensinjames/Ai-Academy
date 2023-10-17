@@ -43,10 +43,10 @@ echo "Container ID: $(sudo docker ps --latest --quiet)"
 sudo docker container exec -u 0 -t $(sudo docker ps --latest --quiet) mkdir -p /app/server/storage /app/server/storage/documents /app/server/storage/vector-cache /app/server/storage/lancedb  
 echo "Placeholder folders in storage created."  
   
-sudo docker container exec -u 0 -t $(sudo docker ps --latest --quiet) touch /app/server/storage/anythingllm.db  
+sudo docker container exec -u 0 -t $(sudo docker ps --latest --quiet) touch /app/server/storage/PreeminnetAcademy.db  
 echo "SQLite DB placeholder set."  
   
-sudo docker container exec -u 0 -t $(sudo docker ps --latest --quiet) chown -R anythingllm:anythingllm /app/collector /app/server  
+sudo docker container exec -u 0 -t $(sudo docker ps --latest --quiet) chown -R PreeminnetAcademy:PreeminnetAcademy /app/collector /app/server  
 echo "File permissions corrected."  
   
 export ONLINE=$(curl -Is http://localhost:3001/api/ping | head -n 1|cut -d$' ' -f2)  
@@ -56,4 +56,4 @@ if [ "$ONLINE" = 200 ]; then
   echo "Running migrations..." && curl -Is http://localhost:3001/api/migrate | head -n 1 | cut -d$' ' -f2  
 fi  
   
-echo "Setup complete! AnythingLLM instance is now online!"  
+echo "Setup complete! PreeminnetAcademy instance is now online!"  

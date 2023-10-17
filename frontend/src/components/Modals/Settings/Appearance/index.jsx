@@ -3,8 +3,8 @@ import useLogo from "../../../../hooks/useLogo";
 import usePrefersDarkMode from "../../../../hooks/usePrefersDarkMode";
 import System from "../../../../models/system";
 import EditingChatBubble from "../../../EditingChatBubble";
-import AnythingLLMLight from "../../../../media/logo/preeminent-academy-light.png";
-import AnythingLLMDark from "../../../../media/logo/preeminent-academy-dark.png";
+import PreeminnetAcademyLight from "../../../../media/logo/preeminent-academy-light.png";
+import PreeminnetAcademyDark from "../../../../media/logo/preeminent-academy-dark.png";
 import showToast from "../../../../utils/toast";
 
 export default function Appearance() {
@@ -101,7 +101,7 @@ export default function Appearance() {
       <div className="relative bg-white rounded-lg shadow dark:bg-stone-700">
         <div className="flex items-start justify-between px-6 py-4">
           <p className="text-gray-800 dark:text-stone-200 text-base ">
-            Customize the appearance settings of AnythingLLM instance.
+            Customize the appearance settings of PreeminnetAcademy instance.
           </p>
         </div>
 
@@ -122,8 +122,8 @@ export default function Appearance() {
                 className="w-48 h-48 object-contain mr-6"
                 onError={(e) =>
                   (e.target.src = prefersDarkMode
-                    ? AnythingLLMLight
-                    : AnythingLLMDark)
+                    ? PreeminnetAcademyLight
+                    : PreeminnetAcademyDark)
                 }
               />
               <div className="flex flex-col">

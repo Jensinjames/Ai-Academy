@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import Sidebar, { SidebarMobileHeader } from "../../../components/AdminSidebar";
 import { isMobile } from "react-device-detect";
 import Admin from "../../../models/admin";
-import AnythingLLMLight from "../../../media/logo/preeminent-academy-light.png";
-import AnythingLLMDark from "../../../media/logo/preeminent-academy-dark.png";
+import PreeminnetAcademyLight from "../../../media/logo/preeminent-academy-light.png";
+import PreeminnetAcademyDark from "../../../media/logo/preeminent-academy-dark.png";
 import usePrefersDarkMode from "../../../hooks/usePrefersDarkMode";
 import useLogo from "../../../hooks/useLogo";
 import System from "../../../models/system";
@@ -131,8 +131,8 @@ export default function Appearance() {
                 className="w-48 h-48 object-contain mr-6"
                 onError={(e) =>
                   (e.target.src = prefersDarkMode
-                    ? AnythingLLMLight
-                    : AnythingLLMDark)
+                    ? PreeminnetAcademyLight
+                    : PreeminnetAcademyDark)
                 }
               />
               <div className="flex flex-col">

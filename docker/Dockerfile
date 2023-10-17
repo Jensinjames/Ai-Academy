@@ -27,9 +27,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     python3 -m pip install --no-cache-dir virtualenv
 
 # Create a group and user with specific UID and GID
-RUN groupadd -g $ARG_GID anythingllm && \
-    useradd -u $ARG_UID -m -d /app -s /bin/bash -g anythingllm anythingllm && \
-    mkdir -p /app/frontend/ /app/server/ /app/collector/ && chown -R anythingllm:anythingllm /app
+RUN groupadd -g $ARG_GID PreeminnetAcademy && \
+    useradd -u $ARG_UID -m -d /app -s /bin/bash -g PreeminnetAcademy PreeminnetAcademy && \
+    mkdir -p /app/frontend/ /app/server/ /app/collector/ && chown -R PreeminnetAcademy:PreeminnetAcademy /app
 
 # Copy docker helper scripts
 COPY ./docker/docker-entrypoint.sh /usr/local/bin/
@@ -39,7 +39,7 @@ COPY ./docker/docker-healthcheck.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
     chmod +x /usr/local/bin/docker-healthcheck.sh
 
-USER anythingllm
+USER PreeminnetAcademy
 
 WORKDIR /app
 
@@ -63,13 +63,13 @@ RUN cd ./frontend/ && yarn build && yarn cache clean
 
 # Setup the server
 FROM server-deps as production-stage
-COPY --chown=anythingllm:anythingllm ./server/ ./server/
+COPY --chown=PreeminnetAcademy:PreeminnetAcademy ./server/ ./server/
 
 # Copy built static frontend files to the server public directory
 COPY --from=build-stage /app/frontend/dist ./server/public
 
 # Copy the collector
-COPY --chown=anythingllm:anythingllm ./collector/ ./collector/
+COPY --chown=PreeminnetAcademy:PreeminnetAcademy ./collector/ ./collector/
 
 # Install collector dependencies
 RUN cd /app/collector && \

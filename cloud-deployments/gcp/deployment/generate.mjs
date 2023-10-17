@@ -54,7 +54,7 @@ const updatedTemplateString = templateString.replace(REPLACEMENT_KEY, formattedS
 const output = path.resolve(__dirname, `gcp_deploy_anything_llm_with_env.yaml`);
 fs.writeFileSync(output, updatedTemplateString, "utf8");
 
-console.log(chalk.greenBright('[SUCCESS]'), 'Deploy AnythingLLM on GCP Deployment Manager using your template document.');
+console.log(chalk.greenBright('[SUCCESS]'), 'Deploy PreeminnetAcademy on GCP Deployment Manager using your template document.');
 console.log(chalk.greenBright('File Created:'), 'gcp_deploy_anything_llm_with_env.yaml in the output directory.');
 console.log(chalk.blueBright('[INFO]'), 'Refer to the GCP Deployment Manager documentation for how to use this file.');
 

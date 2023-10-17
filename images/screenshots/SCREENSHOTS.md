@@ -1,4 +1,4 @@
-# AnythingLLM Screenshots
+# PreeminnetAcademy Screenshots
 
 ### Homescreen
 ![Homescreen](./home.png)

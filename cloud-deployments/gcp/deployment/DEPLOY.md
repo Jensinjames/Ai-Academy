@@ -1,6 +1,6 @@
-# How to deploy a private AnythingLLM instance on GCP
+# How to deploy a private PreeminnetAcademy instance on GCP
 
-With a GCP account you can easily deploy a private AnythingLLM instance on GCP. This will create a url that you can access from any browser over HTTP (HTTPS not supported). This single instance will run on your own keys and they will not be exposed - however if you want your instance to be protected it is highly recommend that you set the `AUTH_TOKEN` and `JWT_SECRET` variables in the `docker/` ENV.
+With a GCP account you can easily deploy a private PreeminnetAcademy instance on GCP. This will create a url that you can access from any browser over HTTP (HTTPS not supported). This single instance will run on your own keys and they will not be exposed - however if you want your instance to be protected it is highly recommend that you set the `AUTH_TOKEN` and `JWT_SECRET` variables in the `docker/` ENV.
 
 [Refer to .env.example](../../../docker/HOW_TO_USE_DOCKER.md) for data format.
 
@@ -11,7 +11,7 @@ The output of this cloudformation stack will be:
 
 **Requirements**
 - An GCP account with billing information.
-  - AnythingLLM (GUI + document processor) must use a n1-standard-1 minimum and 10Gib SSD hard disk volume
+  - PreeminnetAcademy (GUI + document processor) must use a n1-standard-1 minimum and 10Gib SSD hard disk volume
 - `.env` file that is filled out with your settings and set up in the `docker/` folder
 
 ## How to deploy on GCP

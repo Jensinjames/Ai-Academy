@@ -3,7 +3,7 @@ const path = require("path");
 const { v4 } = require("uuid");
 
 async function exportData() {
-  const uid = `anythingllm-export-${new Date()
+  const uid = `PreeminnetAcademy-export-${new Date()
     .toJSON()
     .slice(0, 10)}-${new Date().toJSON().slice(11, 19)}`;
   const folder =
@@ -44,13 +44,13 @@ async function exportData() {
       );
     }
 
-    if (fs.existsSync(path.resolve(storageBase, `anythingllm.db`))) {
+    if (fs.existsSync(path.resolve(storageBase, `PreeminnetAcademy.db`))) {
       console.log(
-        "\x1b[34m[EXPORTING DATA]\x1b[0m Copying anythingllm database!"
+        "\x1b[34m[EXPORTING DATA]\x1b[0m Copying PreeminnetAcademy database!"
       );
       fs.cpSync(
-        path.resolve(storageBase, `anythingllm.db`),
-        path.resolve(folder, "anythingllm.db")
+        path.resolve(storageBase, `PreeminnetAcademy.db`),
+        path.resolve(folder, "PreeminnetAcademy.db")
       );
     }
 
@@ -140,15 +140,15 @@ async function unpackAndOverwriteImport(importFilename) {
       );
     }
 
-    if (fs.existsSync(path.resolve(outDir, `anythingllm.db`))) {
+    if (fs.existsSync(path.resolve(outDir, `PreeminnetAcademy.db`))) {
       console.log(
-        "\x1b[34m[OVERWRITE & IMPORT DATA]\x1b[0m Importing AnythingLLM DB!"
+        "\x1b[34m[OVERWRITE & IMPORT DATA]\x1b[0m Importing PreeminnetAcademy DB!"
       );
-      if (fs.existsSync(path.resolve(storageBase, `anythingllm.db`)))
-        fs.rmSync(path.resolve(storageBase, `anythingllm.db`), { force: true });
+      if (fs.existsSync(path.resolve(storageBase, `PreeminnetAcademy.db`)))
+        fs.rmSync(path.resolve(storageBase, `PreeminnetAcademy.db`), { force: true });
       fs.cpSync(
-        path.resolve(outDir, `anythingllm.db`),
-        path.resolve(storageBase, "anythingllm.db")
+        path.resolve(outDir, `PreeminnetAcademy.db`),
+        path.resolve(storageBase, "PreeminnetAcademy.db")
       );
     }
 
