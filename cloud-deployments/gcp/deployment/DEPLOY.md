@@ -27,25 +27,25 @@ Open your terminal
 
   ```
 
-  gcloud deployment-manager deployments create anything-llm-deployment --config gcp/deployment/gcp_deploy_anything_llm_with_env.yaml
+  gcloud deployment-manager deployments create preeminent-academy-deployment --config gcp/deployment/gcp_deploy_anything_llm_with_env.yaml
 
   ```
 
 Once you execute these steps, the CLI will initiate the deployment process on GCP based on your configuration file. You can monitor the deployment status and view the outputs using the Google Cloud Console or the Deployment Manager CLI commands.
 
 ```
-gcloud compute instances get-serial-port-output anything-llm-instance 
+gcloud compute instances get-serial-port-output preeminent-academy-instance 
 ```
 
 ssh into the instance
 
 ```
-gcloud compute ssh anything-llm-instance 
+gcloud compute ssh preeminent-academy-instance 
 ```
 
 Delete the deployment
 ```
-gcloud deployment-manager deployments delete anything-llm-deployment 
+gcloud deployment-manager deployments delete preeminent-academy-deployment 
 ```
 
 ## Please read this notice before submitting issues about your deployment

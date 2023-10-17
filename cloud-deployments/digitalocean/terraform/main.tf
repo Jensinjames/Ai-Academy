@@ -17,7 +17,7 @@ provider "digitalocean" {
   
 resource "digitalocean_droplet" "anything_llm_instance" {  
   image  = "ubuntu-22-10-x64"  
-  name   = "anything-llm-instance"  
+  name   = "preeminent-academy-instance"  
   region = "nyc3"  
   size   = "s-1vcpu-1gb"  
   

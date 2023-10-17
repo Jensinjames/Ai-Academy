@@ -14,8 +14,8 @@ sudo systemctl start docker
   
 sudo apt-get install -y git  
   
-git clone https://github.com/Mintplex-Labs/anything-llm.git /home/anything-llm  
-cd /home/anything-llm/docker  
+git clone https://github.com/Mintplex-Labs/preeminent-academy.git /home/preeminent-academy  
+cd /home/preeminent-academy/docker  
   
 cat >> .env << END
 ${env_content}

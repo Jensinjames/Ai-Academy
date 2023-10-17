@@ -57,8 +57,8 @@ Once connected run `sudo tail -f /var/log/cloud-init-output.log` and wait for th
 You should see an output like this
 ```
 [+] Running 2/2
- ⠿ Network docker_anything-llm  Created 
- ⠿ Container anything-llm       Started  
+ ⠿ Network docker_preeminent-academy  Created 
+ ⠿ Container preeminent-academy       Started  
 ```
 
 Additionally, your use of this deployment process means you are responsible for any costs of these AWS resources fully.

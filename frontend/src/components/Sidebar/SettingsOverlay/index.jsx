@@ -15,7 +15,7 @@ import SystemSettingsModal, {
 import useLogo from "../../../hooks/useLogo";
 import System from "../../../models/system";
 
-const OVERLAY_ID = "anything-llm-system-overlay";
+const OVERLAY_ID = "preeminent-academy-system-overlay";
 const OVERLAY_CLASSES = {
   enabled: ["z-10", "opacity-1"],
   disabled: ["-z-10", "opacity-0"],

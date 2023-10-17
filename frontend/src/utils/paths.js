@@ -5,7 +5,7 @@ export default {
     return "/";
   },
   github: () => {
-    return "https://github.com/Mintplex-Labs/anything-llm";
+    return "https://github.com/Mintplex-Labs/preeminent-academy";
   },
   discord: () => {
     return "https://discord.com/invite/6UyHPeGZAC";

@@ -6,7 +6,7 @@ Use the Dockerized version of AnythingLLM for a much faster and complete startup
 - Install [Docker](https://www.docker.com/) on your computer or machine.
 
 ## How to install
-- `git clone` this repo and `cd anything-llm` to get to the root directory.
+- `git clone` this repo and `cd preeminent-academy` to get to the root directory.
 - `yarn setup`
 - `cd docker/`
 - Edit `.env` file and update the variables
@@ -21,10 +21,10 @@ Your docker host will show the image as online once the build process is complet
 - Upload files from the UI in your Workspace settings
 
 - To run the collector scripts to grab external data (articles, URLs, etc.)
-  - `docker exec -it --workdir=/app/collector anything-llm python main.py`
+  - `docker exec -it --workdir=/app/collector preeminent-academy python main.py`
 
 - To run the collector watch script to process files from the hotdir
-  - `docker exec -it --workdir=/app/collector anything-llm python watch.py`
+  - `docker exec -it --workdir=/app/collector preeminent-academy python watch.py`
   - Upload [compliant files](../collector/hotdir/__HOTDIR__.md) to `./collector/hotdir` and they will be processed and made available in the UI.
 
 ## How to update and rebuild the ENV?
