@@ -117,8 +117,8 @@ export default function ApiKey() {
       <div className="relative bg-white rounded-lg shadow dark:bg-stone-700">
         <div className="flex flex-col items-start justify-between px-6 py-4">
           <p className="text-gray-800 dark:text-stone-200 text-base ">
-            Use this API key for interacting with your PreeminnetAcademy instance
-            programmatically.
+            Use this API key for interacting with your PreeminnetAcademy
+            instance programmatically.
           </p>
           <a
             href={paths.apiDocs()}

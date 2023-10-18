@@ -36,11 +36,12 @@ export default function DefaultChatContainer() {
       >
         <div className="p-4 max-w-full md:max-w-[75%] bg-orange-100 dark:bg-stone-700 rounded-b-2xl rounded-tr-2xl rounded-tl-sm">
           <p className="text-slate-800 dark:text-slate-200 font-[500] md:font-semibold text-sm md:text-base">
-            Welcome to PreeminnetAcademy, PreeminnetAcademy is an open-source AI tool by
-            Mintplex Labs that turns <i>anything</i> into a trained chatbot you
-            can query and chat with. PreeminnetAcademy is a BYOK (bring-your-own-keys)
-            software so there is no subscription, fee, or charges for this
-            software outside of the services you want to use with it.
+            Welcome to PreeminnetAcademy, PreeminnetAcademy is an open-source AI
+            tool by Mintplex Labs that turns <i>anything</i> into a trained
+            chatbot you can query and chat with. PreeminnetAcademy is a BYOK
+            (bring-your-own-keys) software so there is no subscription, fee, or
+            charges for this software outside of the services you want to use
+            with it.
           </p>
         </div>
       </div>
@@ -54,9 +55,9 @@ export default function DefaultChatContainer() {
       >
         <div className="p-4 max-w-full md:max-w-[75%] bg-orange-100 dark:bg-stone-700 rounded-b-2xl rounded-tr-2xl rounded-tl-sm">
           <p className="text-slate-800 dark:text-slate-200 font-[500] md:font-semibold text-sm md:text-base">
-            PreeminnetAcademy is the easiest way to put powerful AI products like
-            OpenAi, GPT-4, LangChain, PineconeDB, ChromaDB, and other services
-            together in a neat package with no fuss to increase your
+            PreeminnetAcademy is the easiest way to put powerful AI products
+            like OpenAi, GPT-4, LangChain, PineconeDB, ChromaDB, and other
+            services together in a neat package with no fuss to increase your
             productivity by 100x.
           </p>
         </div>
@@ -71,12 +72,12 @@ export default function DefaultChatContainer() {
       >
         <div className="p-4 max-w-full md:max-w-[75%] bg-orange-100 dark:bg-stone-700 rounded-b-2xl rounded-tr-2xl rounded-tl-sm">
           <p className="text-slate-800 dark:text-slate-200 font-[500] md:font-semibold text-sm md:text-base">
-            PreeminnetAcademy can run totally locally on your machine with little
-            overhead you wont even notice it's there! No GPU needed. Cloud and
-            on-premises installation is available as well.
+            PreeminnetAcademy can run totally locally on your machine with
+            little overhead you wont even notice it's there! No GPU needed.
+            Cloud and on-premises installation is available as well.
             <br />
-            The AI tooling ecosystem gets more powerful everyday. PreeminnetAcademy
-            makes it easy to use.
+            The AI tooling ecosystem gets more powerful everyday.
+            PreeminnetAcademy makes it easy to use.
           </p>
           <a
             href={paths.github()}

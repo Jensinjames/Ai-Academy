@@ -14,9 +14,13 @@ export default function useLogo() {
         const logoURL = await System.fetchLogo(!prefersDarkMode);
         logoURL
           ? setLogo(logoURL)
-          : setLogo(prefersDarkMode ? PreeminnetAcademyLight : PreeminnetAcademyDark);
+          : setLogo(
+              prefersDarkMode ? PreeminnetAcademyLight : PreeminnetAcademyDark
+            );
       } catch (err) {
-        setLogo(prefersDarkMode ? PreeminnetAcademyLight : PreeminnetAcademyDark);
+        setLogo(
+          prefersDarkMode ? PreeminnetAcademyLight : PreeminnetAcademyDark
+        );
         console.error("Failed to fetch logo:", err);
       }
     }

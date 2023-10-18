@@ -11,8 +11,8 @@ export default function ExportOrImportData({ hideModal = noop }) {
       <div className="relative bg-white rounded-lg shadow dark:bg-stone-700">
         <div className="flex flex-col items-start justify-between px-6 py-4">
           <p className="text-gray-800 dark:text-stone-200 text-base ">
-            Have multiple PreeminnetAcademy instances or simply want to backup or
-            re-import data from another instance? You can do so here.
+            Have multiple PreeminnetAcademy instances or simply want to backup
+            or re-import data from another instance? You can do so here.
             <br />
             <i>
               This will not automatically sync your vector database embeddings!

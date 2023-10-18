@@ -145,7 +145,9 @@ async function unpackAndOverwriteImport(importFilename) {
         "\x1b[34m[OVERWRITE & IMPORT DATA]\x1b[0m Importing PreeminnetAcademy DB!"
       );
       if (fs.existsSync(path.resolve(storageBase, `PreeminnetAcademy.db`)))
-        fs.rmSync(path.resolve(storageBase, `PreeminnetAcademy.db`), { force: true });
+        fs.rmSync(path.resolve(storageBase, `PreeminnetAcademy.db`), {
+          force: true,
+        });
       fs.cpSync(
         path.resolve(outDir, `PreeminnetAcademy.db`),
         path.resolve(storageBase, "PreeminnetAcademy.db")

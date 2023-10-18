@@ -43,9 +43,9 @@ export default function VectorDBSelection({
       <div className="relative bg-white rounded-lg shadow dark:bg-stone-700">
         <div className="flex items-start justify-between px-6 py-4">
           <p className="text-gray-800 dark:text-stone-200 text-base ">
-            These are the credentials and settings for how your PreeminnetAcademy
-            instance will function. Its important these keys are current and
-            correct.
+            These are the credentials and settings for how your
+            PreeminnetAcademy instance will function. Its important these keys
+            are current and correct.
           </p>
         </div>
 
