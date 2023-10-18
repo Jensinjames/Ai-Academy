@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import usePrefersDarkMode from "./usePrefersDarkMode";
 import System from "../models/system";
-import PreeminnetAcademyDark from "../media/logo/preeminent-academy-dark.png";
-import PreeminnetAcademyLight from "../media/logo/preeminent-academy-light.png";
+import PreeminnetAcademyDark from "./media/logo/preeminent-academy-dark.png";
+import PreeminnetAcademyLight from "./media/logo/preeminent-academy-light.png";
 
 export default function useLogo() {
   const [logo, setLogo] = useState("");
