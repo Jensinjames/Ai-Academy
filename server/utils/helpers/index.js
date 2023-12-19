@@ -23,16 +23,65 @@ function getVectorDbClass() {
 
 function getLLMProvider() {
   const vectorSelection = process.env.LLM_PROVIDER || "openai";
+  const embedder = getEmbeddingEngineSelection();
   switch (vectorSelection) {
     case "openai":
-      const { OpenAi } = require("../AiProviders/openAi");
-      return new OpenAi();
+      const { OpenAiLLM } = require("../AiProviders/openAi");
+      return new OpenAiLLM(embedder);
     case "azure":
-      const { AzureOpenAi } = require("../AiProviders/azureOpenAi");
-      return new AzureOpenAi();
+      const { AzureOpenAiLLM } = require("../AiProviders/azureOpenAi");
+      return new AzureOpenAiLLM(embedder);
+    case "anthropic":
+      const { AnthropicLLM } = require("../AiProviders/anthropic");
+      return new AnthropicLLM(embedder);
+    case "lmstudio":
+      const { LMStudioLLM } = require("../AiProviders/lmStudio");
+      return new LMStudioLLM(embedder);
+    case "localai":
+      const { LocalAiLLM } = require("../AiProviders/localAi");
+      return new LocalAiLLM(embedder);
+    case "native":
+      const { NativeLLM } = require("../AiProviders/native");
+      return new NativeLLM(embedder);
     default:
       throw new Error("ENV: No LLM_PROVIDER value found in environment!");
   }
+}
+
+function getEmbeddingEngineSelection() {
+  const engineSelection = process.env.EMBEDDING_ENGINE;
+  switch (engineSelection) {
+    case "openai":
+      const { OpenAiEmbedder } = require("../EmbeddingEngines/openAi");
+      return new OpenAiEmbedder();
+    case "azure":
+      const {
+        AzureOpenAiEmbedder,
+      } = require("../EmbeddingEngines/azureOpenAi");
+      return new AzureOpenAiEmbedder();
+    case "localai":
+      const { LocalAiEmbedder } = require("../EmbeddingEngines/localAi");
+      return new LocalAiEmbedder();
+    case "native":
+      const { NativeEmbedder } = require("../EmbeddingEngines/native");
+      return new NativeEmbedder();
+    default:
+      return null;
+  }
+}
+
+// Some models have lower restrictions on chars that can be encoded in a single pass
+// and by default we assume it can handle 1,000 chars, but some models use work with smaller
+// chars so here we can override that value when embedding information.
+function maximumChunkLength() {
+  if (
+    !!process.env.EMBEDDING_MODEL_MAX_CHUNK_LENGTH &&
+    !isNaN(process.env.EMBEDDING_MODEL_MAX_CHUNK_LENGTH) &&
+    Number(process.env.EMBEDDING_MODEL_MAX_CHUNK_LENGTH) > 1
+  )
+    return Number(process.env.EMBEDDING_MODEL_MAX_CHUNK_LENGTH);
+
+  return 1_000;
 }
 
 function toChunks(arr, size) {
@@ -42,6 +91,8 @@ function toChunks(arr, size) {
 }
 
 module.exports = {
+  getEmbeddingEngineSelection,
+  maximumChunkLength,
   getVectorDbClass,
   getLLMProvider,
   toChunks,

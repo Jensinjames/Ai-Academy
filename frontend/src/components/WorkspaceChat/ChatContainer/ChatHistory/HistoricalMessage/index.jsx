@@ -1,25 +1,27 @@
 import { memo, forwardRef } from "react";
-import { AlertTriangle } from "react-feather";
+import { Warning } from "@phosphor-icons/react";
 import Jazzicon from "../../../../UserIcon";
-import renderMarkdown from "../../../../../utils/chat/markdown";
-import { userFromStorage } from "../../../../../utils/request";
+import renderMarkdown from "@/utils/chat/markdown";
+import { userFromStorage } from "@/utils/request";
 import Citations from "../Citation";
-import {
-  AI_BACKGROUND_COLOR,
-  USER_BACKGROUND_COLOR,
-} from "../../../../../utils/constants";
+import { AI_BACKGROUND_COLOR, USER_BACKGROUND_COLOR } from "@/utils/constants";
+import { v4 } from "uuid";
 
 const HistoricalMessage = forwardRef(
-  ({ message, role, workspace, sources = [], error = false }, ref) => {
+  (
+    { uuid = v4(), message, role, workspace, sources = [], error = false },
+    ref
+  ) => {
     return (
       <div
+        key={uuid}
         ref={ref}
         className={`flex justify-center items-end w-full ${
           role === "user" ? USER_BACKGROUND_COLOR : AI_BACKGROUND_COLOR
         }`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`py-8 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon
@@ -37,8 +39,8 @@ const HistoricalMessage = forwardRef(
               <span
                 className={`inline-block p-2 rounded-lg bg-red-50 text-red-500`}
               >
-                <AlertTriangle className="h-4 w-4 mb-1 inline-block" /> Could
-                not respond to message.
+                <Warning className="h-4 w-4 mb-1 inline-block" /> Could not
+                respond to message.
               </span>
             ) : (
               <span

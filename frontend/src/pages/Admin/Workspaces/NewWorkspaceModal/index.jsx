@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { X } from "react-feather";
-import Admin from "../../../../models/admin";
+import { X } from "@phosphor-icons/react";
+import Admin from "@/models/admin";
 const DIALOG_ID = `new-workspace-modal`;
 
 function hideModal() {

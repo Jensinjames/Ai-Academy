@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
-import Sidebar, {
-  SidebarMobileHeader,
-} from "../../../components/SettingsSidebar";
+import Sidebar, { SidebarMobileHeader } from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
-import showToast from "../../../utils/toast";
-import System from "../../../models/system";
-import paths from "../../../utils/paths";
-import {
-  AUTH_TIMESTAMP,
-  AUTH_TOKEN,
-  AUTH_USER,
-} from "../../../utils/constants";
-import PreLoader from "../../../components/Preloader";
+import showToast from "@/utils/toast";
+import System from "@/models/system";
+import paths from "@/utils/paths";
+import { AUTH_TIMESTAMP, AUTH_TOKEN, AUTH_USER } from "@/utils/constants";
+import PreLoader from "@/components/Preloader";
 
 export default function GeneralSecurity() {
   return (
@@ -19,7 +13,7 @@ export default function GeneralSecurity() {
       {!isMobile && <Sidebar />}
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient md:min-w-[82%] p-[18px] h-full overflow-y-scroll"
+        className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
       >
         {isMobile && <SidebarMobileHeader />}
         <MultiUserMode />
@@ -55,7 +49,7 @@ function MultiUserMode() {
           window.localStorage.removeItem(AUTH_USER);
           window.localStorage.removeItem(AUTH_TOKEN);
           window.localStorage.removeItem(AUTH_TIMESTAMP);
-          window.location = paths.admin.users();
+          window.location = paths.settings.users();
         }, 2_000);
         return;
       }
@@ -78,7 +72,7 @@ function MultiUserMode() {
 
   if (loading) {
     return (
-      <div className="h-1/2 transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] md:min-w-[82%] p-[18px] h-full overflow-y-scroll">
+      <div className="h-1/2 transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] p-[18px] h-full overflow-y-scroll">
         <div className="w-full h-full flex justify-center items-center">
           <PreLoader />
         </div>
@@ -242,7 +236,7 @@ function PasswordProtection() {
 
   if (loading) {
     return (
-      <div className="h-1/2 transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] md:min-w-[82%] p-[18px] h-full overflow-y-scroll">
+      <div className="h-1/2 transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] p-[18px] h-full overflow-y-scroll">
         <div className="w-full h-full flex justify-center items-center">
           <PreLoader />
         </div>

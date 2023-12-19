@@ -10,12 +10,16 @@ const KEY_MAPPING = {
   },
   OpenAiModelPref: {
     envKey: "OPEN_MODEL_PREF",
-    checks: [isNotEmpty, validOpenAIModel],
+    checks: [isNotEmpty],
   },
   // Azure OpenAI Settings
   AzureOpenAiEndpoint: {
     envKey: "AZURE_OPENAI_ENDPOINT",
     checks: [isNotEmpty, validAzureURL],
+  },
+  AzureOpenAiTokenLimit: {
+    envKey: "AZURE_OPENAI_TOKEN_LIMIT",
+    checks: [validOpenAiTokenLimit],
   },
   AzureOpenAiKey: {
     envKey: "AZURE_OPENAI_KEY",
@@ -28,6 +32,67 @@ const KEY_MAPPING = {
   AzureOpenAiEmbeddingModelPref: {
     envKey: "EMBEDDING_MODEL_PREF",
     checks: [isNotEmpty],
+  },
+
+  // Anthropic Settings
+  AnthropicApiKey: {
+    envKey: "ANTHROPIC_API_KEY",
+    checks: [isNotEmpty, validAnthropicApiKey],
+  },
+  AnthropicModelPref: {
+    envKey: "ANTHROPIC_MODEL_PREF",
+    checks: [isNotEmpty, validAnthropicModel],
+  },
+
+  // LMStudio Settings
+  LMStudioBasePath: {
+    envKey: "LMSTUDIO_BASE_PATH",
+    checks: [isNotEmpty, validLLMExternalBasePath],
+  },
+  LMStudioTokenLimit: {
+    envKey: "LMSTUDIO_MODEL_TOKEN_LIMIT",
+    checks: [nonZero],
+  },
+
+  // LocalAI Settings
+  LocalAiBasePath: {
+    envKey: "LOCAL_AI_BASE_PATH",
+    checks: [isNotEmpty, validLLMExternalBasePath],
+  },
+  LocalAiModelPref: {
+    envKey: "LOCAL_AI_MODEL_PREF",
+    checks: [],
+  },
+  LocalAiTokenLimit: {
+    envKey: "LOCAL_AI_MODEL_TOKEN_LIMIT",
+    checks: [nonZero],
+  },
+  LocalAiApiKey: {
+    envKey: "LOCAL_AI_API_KEY",
+    checks: [],
+  },
+
+  // Native LLM Settings
+  NativeLLMModelPref: {
+    envKey: "NATIVE_LLM_MODEL_PREF",
+    checks: [isDownloadedModel],
+  },
+
+  EmbeddingEngine: {
+    envKey: "EMBEDDING_ENGINE",
+    checks: [supportedEmbeddingModel],
+  },
+  EmbeddingBasePath: {
+    envKey: "EMBEDDING_BASE_PATH",
+    checks: [isNotEmpty, validLLMExternalBasePath],
+  },
+  EmbeddingModelPref: {
+    envKey: "EMBEDDING_MODEL_PREF",
+    checks: [isNotEmpty],
+  },
+  EmbeddingModelMaxChunkLength: {
+    envKey: "EMBEDDING_MODEL_MAX_CHUNK_LENGTH",
+    checks: [nonZero],
   },
 
   // Vector Database Selection Settings
@@ -92,12 +157,15 @@ const KEY_MAPPING = {
     envKey: "JWT_SECRET",
     checks: [requiresForceMode],
   },
-  // Not supported yet.
-  // 'StorageDir': 'STORAGE_DIR',
 };
 
 function isNotEmpty(input = "") {
   return !input || input.length === 0 ? "Value cannot be empty" : null;
+}
+
+function nonZero(input = "") {
+  if (isNaN(Number(input))) return "Value must be a number";
+  return Number(input) <= 0 ? "Value must be greater than zero" : null;
 }
 
 function isValidURL(input = "") {
@@ -113,15 +181,47 @@ function validOpenAIKey(input = "") {
   return input.startsWith("sk-") ? null : "OpenAI Key must start with sk-";
 }
 
-function supportedLLM(input = "") {
-  return ["openai", "azure"].includes(input);
+function validAnthropicApiKey(input = "") {
+  return input.startsWith("sk-ant-")
+    ? null
+    : "Anthropic Key must start with sk-ant-";
 }
 
-function validOpenAIModel(input = "") {
-  const validModels = ["gpt-4", "gpt-3.5-turbo"];
+function validLLMExternalBasePath(input = "") {
+  try {
+    new URL(input);
+    if (!input.includes("v1")) return "URL must include /v1";
+    if (input.split("").slice(-1)?.[0] === "/")
+      return "URL cannot end with a slash";
+    return null;
+  } catch {
+    return "Not a valid URL";
+  }
+}
+
+function supportedLLM(input = "") {
+  return [
+    "openai",
+    "azure",
+    "anthropic",
+    "lmstudio",
+    "localai",
+    "native",
+  ].includes(input);
+}
+
+function validAnthropicModel(input = "") {
+  const validModels = ["claude-2", "claude-instant-1"];
   return validModels.includes(input)
     ? null
     : `Invalid Model type. Must be one of ${validModels.join(", ")}.`;
+}
+
+function supportedEmbeddingModel(input = "") {
+  const supported = ["openai", "azure", "localai", "native"];
+  return supported.includes(input)
+    ? null
+    : `Invalid Embedding model type. Must be one of ${supported.join(", ")}.`;
 }
 
 function supportedVectorDB(input = "") {
@@ -148,8 +248,32 @@ function validAzureURL(input = "") {
   }
 }
 
+function validOpenAiTokenLimit(input = "") {
+  const tokenLimit = Number(input);
+  if (isNaN(tokenLimit)) return "Token limit is not a number";
+  if (![4_096, 16_384, 8_192, 32_768].includes(tokenLimit))
+    return "Invalid OpenAI token limit.";
+  return null;
+}
+
 function requiresForceMode(_, forceModeEnabled = false) {
   return forceModeEnabled === true ? null : "Cannot set this setting.";
+}
+
+function isDownloadedModel(input = "") {
+  const fs = require("fs");
+  const path = require("path");
+  const storageDir = path.resolve(
+    process.env.STORAGE_DIR
+      ? path.resolve(process.env.STORAGE_DIR, "models", "downloaded")
+      : path.resolve(__dirname, `../../storage/models/downloaded`)
+  );
+  if (!fs.existsSync(storageDir)) return false;
+
+  const files = fs
+    .readdirSync(storageDir)
+    .filter((file) => file.includes(".gguf"));
+  return files.includes(input);
 }
 
 // This will force update .env variables which for any which reason were not able to be parsed or
@@ -193,6 +317,14 @@ async function dumpENV() {
     "CACHE_VECTORS",
     "STORAGE_DIR",
     "SERVER_PORT",
+    // Password Schema Keys if present.
+    "PASSWORDMINCHAR",
+    "PASSWORDMAXCHAR",
+    "PASSWORDLOWERCASE",
+    "PASSWORDUPPERCASE",
+    "PASSWORDNUMERIC",
+    "PASSWORDSYMBOL",
+    "PASSWORDREQUIREMENTS",
   ];
 
   for (const key of protectedKeys) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from "react";
 import truncate from "truncate";
-import { CheckCircle, XCircle } from "react-feather";
+import { CheckCircle, XCircle } from "@phosphor-icons/react";
 import Workspace from "../../../../../../models/workspace";
 import { humanFileSize, milliToHms } from "../../../../../../utils/numbers";
 import PreLoader from "../../../../../Preloader";
@@ -45,7 +45,7 @@ function FileUploadProgressComponent({
   if (rejected) {
     return (
       <div className="h-14 px-2 py-2 flex items-center gap-x-4 rounded-lg bg-white/5 border border-white/40">
-        <div className="w-6 h-6">
+        <div className="w-6 h-6 flex-shrink-0">
           <XCircle className="w-6 h-6 stroke-white bg-red-500 rounded-full p-1 w-full h-full" />
         </div>
         <div className="flex flex-col">

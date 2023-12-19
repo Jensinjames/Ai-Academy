@@ -1,5 +1,6 @@
-import { API_BASE, AUTH_TIMESTAMP } from "../utils/constants";
-import { baseHeaders } from "../utils/request";
+import { API_BASE, AUTH_TIMESTAMP } from "@/utils/constants";
+import { baseHeaders } from "@/utils/request";
+import DataConnector from "./dataConnector";
 
 const System = {
   ping: async function () {
@@ -133,11 +134,23 @@ const System = {
         return false;
       });
   },
-  deleteDocument: async (name, meta) => {
+  deleteDocument: async (name) => {
     return await fetch(`${API_BASE}/system/remove-document`, {
       method: "DELETE",
       headers: baseHeaders(),
-      body: JSON.stringify({ name, meta }),
+      body: JSON.stringify({ name }),
+    })
+      .then((res) => res.ok)
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  },
+  deleteFolder: async (name) => {
+    return await fetch(`${API_BASE}/system/remove-folder`, {
+      method: "DELETE",
+      headers: baseHeaders(),
+      body: JSON.stringify({ name }),
     })
       .then((res) => res.ok)
       .catch((e) => {
@@ -170,6 +183,21 @@ const System = {
         return { success: false, error: e.message };
       });
   },
+  uploadPfp: async function (formData) {
+    return await fetch(`${API_BASE}/system/upload-pfp`, {
+      method: "POST",
+      body: formData,
+      headers: baseHeaders(),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Error uploading pfp.");
+        return { success: true, error: null };
+      })
+      .catch((e) => {
+        console.log(e);
+        return { success: false, error: e.message };
+      });
+  },
   uploadLogo: async function (formData) {
     return await fetch(`${API_BASE}/system/upload-logo`, {
       method: "POST",
@@ -191,7 +219,7 @@ const System = {
       cache: "no-cache",
     })
       .then((res) => {
-        if (res.ok) return res.blob();
+        if (res.ok && res.status !== 204) return res.blob();
         throw new Error("Failed to fetch logo!");
       })
       .then((blob) => URL.createObjectURL(blob))
@@ -200,6 +228,36 @@ const System = {
         return null;
       });
   },
+  fetchPfp: async function (id) {
+    return await fetch(`${API_BASE}/system/pfp/${id}`, {
+      method: "GET",
+      cache: "no-cache",
+    })
+      .then((res) => {
+        if (res.ok && res.status !== 204) return res.blob();
+        throw new Error("Failed to fetch pfp.");
+      })
+      .then((blob) => (blob ? URL.createObjectURL(blob) : null))
+      .catch((e) => {
+        console.log(e);
+        return null;
+      });
+  },
+  removePfp: async function (id) {
+    return await fetch(`${API_BASE}/system/remove-pfp`, {
+      method: "DELETE",
+      headers: baseHeaders(),
+    })
+      .then((res) => {
+        if (res.ok) return { success: true, error: null };
+        throw new Error("Failed to remove pfp.");
+      })
+      .catch((e) => {
+        console.log(e);
+        return { success: false, error: e.message };
+      });
+  },
+
   isDefaultLogo: async function () {
     return await fetch(`${API_BASE}/system/is-default-logo`, {
       method: "GET",
@@ -319,6 +377,74 @@ const System = {
         return false;
       });
   },
+  customModels: async function (provider, apiKey = null, basePath = null) {
+    return fetch(`${API_BASE}/system/custom-models`, {
+      method: "POST",
+      headers: baseHeaders(),
+      body: JSON.stringify({
+        provider,
+        apiKey,
+        basePath,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(res.statusText || "Error finding custom models.");
+        }
+        return res.json();
+      })
+      .catch((e) => {
+        console.error(e);
+        return { models: [], error: e.message };
+      });
+  },
+  chats: async (offset = 0) => {
+    return await fetch(`${API_BASE}/system/workspace-chats`, {
+      method: "POST",
+      headers: baseHeaders(),
+      body: JSON.stringify({ offset }),
+    })
+      .then((res) => res.json())
+      .catch((e) => {
+        console.error(e);
+        return [];
+      });
+  },
+  deleteChat: async (chatId) => {
+    return await fetch(`${API_BASE}/system/workspace-chats/${chatId}`, {
+      method: "DELETE",
+      headers: baseHeaders(),
+    })
+      .then((res) => res.json())
+      .catch((e) => {
+        console.error(e);
+        return { success: false, error: e.message };
+      });
+  },
+  exportChats: async () => {
+    return await fetch(`${API_BASE}/system/export-chats`, {
+      method: "GET",
+      headers: baseHeaders(),
+    })
+      .then((res) => res.text())
+      .catch((e) => {
+        console.error(e);
+        return null;
+      });
+  },
+  updateUser: async (data) => {
+    return await fetch(`${API_BASE}/system/user`, {
+      method: "POST",
+      headers: baseHeaders(),
+      body: JSON.stringify(data),
+    })
+      .then((res) => res.json())
+      .catch((e) => {
+        console.error(e);
+        return { success: false, error: e.message };
+      });
+  },
+  dataConnectors: DataConnector,
 };
 
 export default System;

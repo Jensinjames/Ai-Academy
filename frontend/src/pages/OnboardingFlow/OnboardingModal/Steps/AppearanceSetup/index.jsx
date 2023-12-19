@@ -1,12 +1,12 @@
 import React, { memo, useEffect, useState } from "react";
-import System from "../../../../../models/system";
-import AnythingLLM from "../../../../../media/logo/anything-llm.png";
-import useLogo from "../../../../../hooks/useLogo";
+import System from "@/models/system";
+import AnythingLLM from "@/media/logo/anything-llm.png";
+import useLogo from "@/hooks/useLogo";
 import { Plus } from "@phosphor-icons/react";
-import showToast from "../../../../../utils/toast";
+import showToast from "@/utils/toast";
 
-function AppearanceSetup({ nextStep }) {
-  const { logo: _initLogo } = useLogo();
+function AppearanceSetup({ prevStep, nextStep }) {
+  const { logo: _initLogo, setLogo: _setLogo } = useLogo();
   const [logo, setLogo] = useState("");
   const [isDefaultLogo, setIsDefaultLogo] = useState(true);
 
@@ -35,6 +35,9 @@ function AppearanceSetup({ nextStep }) {
       return;
     }
 
+    const logoURL = await System.fetchLogo();
+    _setLogo(logoURL);
+
     showToast("Image uploaded successfully.", "success");
     setIsDefaultLogo(false);
   };
@@ -53,12 +56,15 @@ function AppearanceSetup({ nextStep }) {
       return;
     }
 
+    const logoURL = await System.fetchLogo();
+    _setLogo(logoURL);
+
     showToast("Image successfully removed.", "success");
   };
 
   return (
-    <div>
-      <div className="flex flex-col w-full px-10 py-12">
+    <div className="w-full">
+      <div className="flex flex-col w-full px-8 py-4">
         <div className="flex flex-col gap-y-2">
           <h2 className="text-white text-sm font-medium">Custom Logo</h2>
           <p className="text-sm font-base text-white/60">
@@ -108,21 +114,24 @@ function AppearanceSetup({ nextStep }) {
           </div>
         </div>
       </div>
-      <div className="flex w-full justify-between items-center p-6 space-x-6 border-t rounded-b border-gray-500/50">
-        <div className="w-96 text-white text-opacity-80 text-xs font-base">
-          Want to customize the automatic messages in your chat? Find more
-          customization options on the appearance settings page.
-        </div>
+      <div className="flex w-full justify-between items-center px-6 py-4 space-x-6 border-t rounded-b border-gray-500/50">
+        <button
+          onClick={prevStep}
+          type="button"
+          className="px-4 py-2 rounded-lg text-white hover:bg-sidebar"
+        >
+          Back
+        </button>
         <div className="flex gap-2">
           <button
-            onClick={nextStep}
+            onClick={() => nextStep("user_mode_setup")}
             type="button"
             className="px-4 py-2 rounded-lg text-white hover:bg-sidebar"
           >
             Skip
           </button>
           <button
-            onClick={nextStep}
+            onClick={() => nextStep("user_mode_setup")}
             type="button"
             className="border border-slate-200 px-4 py-2 rounded-lg text-slate-800 bg-slate-200 text-sm items-center flex gap-x-2 hover:text-white hover:bg-transparent focus:ring-gray-800 font-semibold shadow"
           >

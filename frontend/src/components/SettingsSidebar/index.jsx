@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 // import IndexCount from "../Sidebar/IndexCount";
 // import LLMStatus from "../Sidebar/LLMStatus";
-import paths from "../../utils/paths";
-import useLogo from "../../hooks/useLogo";
+import paths from "@/utils/paths";
+import useLogo from "@/hooks/useLogo";
 import {
   DiscordLogo,
   EnvelopeSimple,
@@ -21,9 +21,11 @@ import {
   House,
   X,
   List,
+  FileCode,
+  Plugs,
 } from "@phosphor-icons/react";
-import useUser from "../../hooks/useUser";
-import { USER_BACKGROUND_COLOR } from "../../utils/constants";
+import useUser from "@/hooks/useUser";
+import { USER_BACKGROUND_COLOR } from "@/utils/constants";
 
 export default function SettingsSidebar() {
   const { logo } = useLogo();
@@ -64,82 +66,89 @@ export default function SettingsSidebar() {
           <div className="h-[100%] flex flex-col w-full justify-between pt-4 overflow-y-hidden">
             <div className="h-auto sidebar-items">
               <div className="flex flex-col gap-y-2 h-[65vh] pb-8 overflow-y-scroll no-scroll">
-                {/* Admin Settings */}
-                {user?.role === "admin" && (
+                {/* Admin/manager Multi-user Settings */}
+                {!!user && user?.role !== "default" && (
                   <>
                     <Option
-                      href={paths.admin.system()}
+                      href={paths.settings.system()}
                       btnText="System Preferences"
                       icon={<SquaresFour className="h-5 w-5 flex-shrink-0" />}
                     />
                     <Option
-                      href={paths.admin.invites()}
+                      href={paths.settings.invites()}
                       btnText="Invitation"
                       icon={
                         <EnvelopeSimple className="h-5 w-5 flex-shrink-0" />
                       }
                     />
                     <Option
-                      href={paths.admin.users()}
+                      href={paths.settings.users()}
                       btnText="Users"
                       icon={<Users className="h-5 w-5 flex-shrink-0" />}
                     />
                     <Option
-                      href={paths.admin.workspaces()}
+                      href={paths.settings.workspaces()}
                       btnText="Workspaces"
                       icon={<BookOpen className="h-5 w-5 flex-shrink-0" />}
-                    />
-                    <Option
-                      href={paths.admin.chats()}
-                      btnText="Workspace Chat"
-                      icon={
-                        <ChatCenteredText className="h-5 w-5 flex-shrink-0" />
-                      }
                     />
                   </>
                 )}
 
-                {/* General Settings */}
                 <Option
-                  href={paths.general.appearance()}
+                  href={paths.settings.chats()}
+                  btnText="Workspace Chat"
+                  icon={<ChatCenteredText className="h-5 w-5 flex-shrink-0" />}
+                />
+
+                <Option
+                  href={paths.settings.appearance()}
                   btnText="Appearance"
                   icon={<Eye className="h-5 w-5 flex-shrink-0" />}
                 />
                 <Option
-                  href={paths.general.apiKeys()}
+                  href={paths.settings.apiKeys()}
                   btnText="API Keys"
                   icon={<Key className="h-5 w-5 flex-shrink-0" />}
                 />
+
+                {(!user || user?.role === "admin") && (
+                  <>
+                    <Option
+                      href={paths.settings.llmPreference()}
+                      btnText="LLM Preference"
+                      icon={<ChatText className="h-5 w-5 flex-shrink-0" />}
+                    />
+                    <Option
+                      href={paths.settings.embeddingPreference()}
+                      btnText="Embedding Preference"
+                      icon={<FileCode className="h-5 w-5 flex-shrink-0" />}
+                    />
+                    <Option
+                      href={paths.settings.vectorDatabase()}
+                      btnText="Vector Database"
+                      icon={<Database className="h-5 w-5 flex-shrink-0" />}
+                    />
+                    <Option
+                      href={paths.settings.dataConnectors.list()}
+                      btnText="Data Connectors"
+                      icon={<Plugs className="h-5 w-5 flex-shrink-0" />}
+                    />
+                  </>
+                )}
+
                 <Option
-                  href={paths.general.llmPreference()}
-                  btnText="LLM Preference"
-                  icon={<ChatText className="h-5 w-5 flex-shrink-0" />}
-                />
-                <Option
-                  href={paths.general.vectorDatabase()}
-                  btnText="Vector Database"
-                  icon={<Database className="h-5 w-5 flex-shrink-0" />}
-                />
-                <Option
-                  href={paths.general.exportImport()}
+                  href={paths.settings.exportImport()}
                   btnText="Export or Import"
                   icon={<DownloadSimple className="h-5 w-5 flex-shrink-0" />}
                 />
                 <Option
-                  href={paths.general.security()}
+                  href={paths.settings.security()}
                   btnText="Security"
                   icon={<Lock className="h-5 w-5 flex-shrink-0" />}
                 />
               </div>
             </div>
             <div>
-              {/* <div className="flex flex-col gap-y-2">
-                <div className="w-full flex items-center justify-between">
-                  <LLMStatus />
-                  <IndexCount />
-                </div>
-              </div> */}
-
               {/* Footer */}
               <div className="flex justify-center mt-2">
                 <div className="flex space-x-4">
@@ -164,9 +173,9 @@ export default function SettingsSidebar() {
                       className="h-5 w-5 stroke-slate-200 group-hover:stroke-slate-200"
                     />
                   </a>
-                  <button className="invisible transition-all duration-300 p-2 rounded-full text-white bg-sidebar-button hover:bg-menu-item-selected-gradient hover:border-slate-100 hover:border-opacity-50 border-transparent border">
+                  {/* <button className="invisible transition-all duration-300 p-2 rounded-full text-white bg-sidebar-button hover:bg-menu-item-selected-gradient hover:border-slate-100 hover:border-opacity-50 border-transparent border">
                     <DotsThree className="h-5 w-5 group-hover:stroke-slate-200" />
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
@@ -262,68 +271,70 @@ export function SidebarMobileHeader() {
                   style={{ height: "calc(100vw - -3rem)" }}
                   className=" flex flex-col gap-y-4 pb-8 overflow-y-scroll no-scroll"
                 >
-                  {user?.role === "admin" && (
-                    <>
-                      <Option
-                        href={paths.admin.system()}
-                        btnText="System Preferences"
-                        icon={<SquaresFour className="h-5 w-5 flex-shrink-0" />}
-                      />
-                      <Option
-                        href={paths.admin.invites()}
-                        btnText="Invitation"
-                        icon={
-                          <EnvelopeSimple className="h-5 w-5 flex-shrink-0" />
-                        }
-                      />
-                      <Option
-                        href={paths.admin.users()}
-                        btnText="Users"
-                        icon={<Users className="h-5 w-5 flex-shrink-0" />}
-                      />
-                      <Option
-                        href={paths.admin.workspaces()}
-                        btnText="Workspaces"
-                        icon={<BookOpen className="h-5 w-5 flex-shrink-0" />}
-                      />
-                      <Option
-                        href={paths.admin.chats()}
-                        btnText="Workspace Chat"
-                        icon={
-                          <ChatCenteredText className="h-5 w-5 flex-shrink-0" />
-                        }
-                      />
-                    </>
-                  )}
-
-                  {/* General Settings */}
                   <Option
-                    href={paths.general.appearance()}
+                    href={paths.settings.system()}
+                    btnText="System Preferences"
+                    icon={<SquaresFour className="h-5 w-5 flex-shrink-0" />}
+                  />
+                  <Option
+                    href={paths.settings.invites()}
+                    btnText="Invitation"
+                    icon={<EnvelopeSimple className="h-5 w-5 flex-shrink-0" />}
+                  />
+                  <Option
+                    href={paths.settings.users()}
+                    btnText="Users"
+                    icon={<Users className="h-5 w-5 flex-shrink-0" />}
+                  />
+                  <Option
+                    href={paths.settings.workspaces()}
+                    btnText="Workspaces"
+                    icon={<BookOpen className="h-5 w-5 flex-shrink-0" />}
+                  />
+
+                  <Option
+                    href={paths.settings.chats()}
+                    btnText="Workspace Chat"
+                    icon={
+                      <ChatCenteredText className="h-5 w-5 flex-shrink-0" />
+                    }
+                  />
+                  <Option
+                    href={paths.settings.appearance()}
                     btnText="Appearance"
                     icon={<Eye className="h-5 w-5 flex-shrink-0" />}
                   />
                   <Option
-                    href={paths.general.apiKeys()}
+                    href={paths.settings.apiKeys()}
                     btnText="API Keys"
                     icon={<Key className="h-5 w-5 flex-shrink-0" />}
                   />
+                  {(!user || user?.role === "admin") && (
+                    <>
+                      <Option
+                        href={paths.settings.llmPreference()}
+                        btnText="LLM Preference"
+                        icon={<ChatText className="h-5 w-5 flex-shrink-0" />}
+                      />
+                      <Option
+                        href={paths.settings.embeddingPreference()}
+                        btnText="Embedding Preference"
+                        icon={<FileCode className="h-5 w-5 flex-shrink-0" />}
+                      />
+                      <Option
+                        href={paths.settings.vectorDatabase()}
+                        btnText="Vector Database"
+                        icon={<Database className="h-5 w-5 flex-shrink-0" />}
+                      />
+                    </>
+                  )}
                   <Option
-                    href={paths.general.llmPreference()}
-                    btnText="LLM Preference"
-                    icon={<ChatText className="h-5 w-5 flex-shrink-0" />}
-                  />
-                  <Option
-                    href={paths.general.vectorDatabase()}
-                    btnText="Vector Database"
-                    icon={<Database className="h-5 w-5 flex-shrink-0" />}
-                  />
-                  <Option
-                    href={paths.general.exportImport()}
+                    href={paths.settings.exportImport()}
                     btnText="Export or Import"
                     icon={<DownloadSimple className="h-5 w-5 flex-shrink-0" />}
                   />
                   <Option
-                    href={paths.general.security()}
+                    href={paths.settings.security()}
                     btnText="Security"
                     icon={<Lock className="h-5 w-5 flex-shrink-0" />}
                   />

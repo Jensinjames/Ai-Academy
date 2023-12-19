@@ -2,8 +2,11 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { storeVectorResult, cachedVectorInformation } = require("../../files");
 const { v4: uuidv4 } = require("uuid");
-const { toChunks, getLLMProvider } = require("../../helpers");
-const { chatPrompt } = require("../../chats");
+const {
+  toChunks,
+  getLLMProvider,
+  getEmbeddingEngineSelection,
+} = require("../../helpers");
 
 const Pinecone = {
   name: "Pinecone",
@@ -37,10 +40,16 @@ const Pinecone = {
     const namespace = await this.namespace(pineconeIndex, _namespace);
     return namespace?.vectorCount || 0;
   },
-  similarityResponse: async function (index, namespace, queryVector) {
+  similarityResponse: async function (
+    index,
+    namespace,
+    queryVector,
+    similarityThreshold = 0.25
+  ) {
     const result = {
       contextTexts: [],
       sourceDocuments: [],
+      scores: [],
     };
     const response = await index.query({
       queryRequest: {
@@ -52,12 +61,15 @@ const Pinecone = {
     });
 
     response.matches.forEach((match) => {
+      if (match.score < similarityThreshold) return;
       result.contextTexts.push(match.metadata.text);
       result.sourceDocuments.push(match);
+      result.scores.push(match.score);
     });
 
     return result;
   },
+
   namespace: async function (index, namespace = null) {
     if (!namespace) throw new Error("No namespace value provided.");
     const { namespaces } = await index.describeIndexStats1();
@@ -122,7 +134,8 @@ const Pinecone = {
       // from vectordb.
       // https://github.com/hwchase17/langchainjs/blob/2def486af734c0ca87285a48f1a04c057ab74bdf/langchain/src/vectorstores/pinecone.ts#L167
       const textSplitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
+        chunkSize:
+          getEmbeddingEngineSelection()?.embeddingMaxChunkLength || 1_000,
         chunkOverlap: 20,
       });
       const textChunks = await textSplitter.splitText(pageContent);
@@ -148,8 +161,8 @@ const Pinecone = {
           documentVectors.push({ docId, vectorId: vectorRecord.id });
         }
       } else {
-        console.error(
-          "Could not use OpenAI to embed document chunks! This document will not be recorded."
+        throw new Error(
+          "Could not embed document chunks! This document will not be recorded."
         );
       }
 
@@ -220,93 +233,35 @@ const Pinecone = {
       message: `Namespace ${namespace} was deleted along with ${details.vectorCount} vectors.`,
     };
   },
-  query: async function (reqBody = {}) {
-    const { namespace = null, input, workspace = {} } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
-
-    const { pineconeIndex } = await this.connect();
-    if (!(await this.namespaceExists(pineconeIndex, namespace))) {
-      return {
-        response: null,
-        sources: [],
-        message: "Invalid query - no documents found for workspace!",
-      };
-    }
-
-    const LLMConnector = getLLMProvider();
-    const queryVector = await LLMConnector.embedTextInput(input);
-    const { contextTexts, sourceDocuments } = await this.similarityResponse(
-      pineconeIndex,
-      namespace,
-      queryVector
-    );
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-     Context:
-     ${contextTexts
-       .map((text, i) => {
-         return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-       })
-       .join("")}`,
-    };
-
-    const memory = [prompt, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
-    });
-
-    return {
-      response: responseText,
-      sources: this.curateSources(sourceDocuments),
-      message: false,
-    };
-  },
-  // This implementation of chat uses the chat history and modifies the system prompt at execution
-  // this is improved over the regular langchain implementation so that chats do not directly modify embeddings
-  // because then multi-user support will have all conversations mutating the base vector collection to which then
-  // the only solution is replicating entire vector databases per user - which will very quickly consume space on VectorDbs
-  chat: async function (reqBody = {}) {
-    const {
-      namespace = null,
-      input,
-      workspace = {},
-      chatHistory = [],
-    } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
+  performSimilaritySearch: async function ({
+    namespace = null,
+    input = "",
+    LLMConnector = null,
+    similarityThreshold = 0.25,
+  }) {
+    if (!namespace || !input || !LLMConnector)
+      throw new Error("Invalid request to performSimilaritySearch.");
 
     const { pineconeIndex } = await this.connect();
     if (!(await this.namespaceExists(pineconeIndex, namespace)))
       throw new Error(
-        "Invalid namespace - has it been collected and seeded yet?"
+        "Invalid namespace - has it been collected and populated yet?"
       );
 
-    const LLMConnector = getLLMProvider();
     const queryVector = await LLMConnector.embedTextInput(input);
     const { contextTexts, sourceDocuments } = await this.similarityResponse(
       pineconeIndex,
       namespace,
-      queryVector
+      queryVector,
+      similarityThreshold
     );
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-    Context:
-    ${contextTexts
-      .map((text, i) => {
-        return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-      })
-      .join("")}`,
-    };
 
-    const memory = [prompt, ...chatHistory, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
+    const sources = sourceDocuments.map((metadata, i) => {
+      return { ...metadata, text: contextTexts[i] };
     });
-
     return {
-      response: responseText,
-      sources: this.curateSources(sourceDocuments),
+      contextTexts,
+      sources: this.curateSources(sources),
       message: false,
     };
   },

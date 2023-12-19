@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { GitHub, GitMerge, Mail, Plus } from "react-feather";
+import {
+  GithubLogo,
+  GitMerge,
+  EnvelopeSimple,
+  Plus,
+} from "@phosphor-icons/react";
 import NewWorkspaceModal, {
   useNewWorkspaceModal,
 } from "../Modals/NewWorkspace";
-import paths from "../../utils/paths";
+import paths from "@/utils/paths";
 import { isMobile } from "react-device-detect";
 import { SidebarMobileHeader } from "../Sidebar";
 import ChatBubble from "../ChatBubble";
-import System from "../../models/system";
+import System from "@/models/system";
 import Jazzicon from "../UserIcon";
-import { userFromStorage } from "../../utils/request";
-import {
-  AI_BACKGROUND_COLOR,
-  USER_BACKGROUND_COLOR,
-} from "../../utils/constants";
+import { userFromStorage } from "@/utils/request";
+import { AI_BACKGROUND_COLOR, USER_BACKGROUND_COLOR } from "@/utils/constants";
 
 export default function DefaultChatContainer() {
   const [mockMsgs, setMockMessages] = useState([]);
@@ -39,7 +41,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${AI_BACKGROUND_COLOR} md:mt-0 mt-[40px]`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`pt-10 pb-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon size={36} user={{ uid: "system" }} role={"assistant"} />
@@ -63,7 +65,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${AI_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`pb-4 pt-2 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon size={36} user={{ uid: "system" }} role={"assistant"} />
@@ -86,7 +88,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${AI_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`pt-2 pb-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon size={36} user={{ uid: "system" }} role={"assistant"} />
@@ -120,7 +122,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${USER_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`py-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon
@@ -144,7 +146,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${AI_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`py-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon size={36} user={{ uid: "system" }} role={"assistant"} />
@@ -179,7 +181,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${USER_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`py-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon
@@ -204,7 +206,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${AI_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`py-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon size={36} user={{ uid: "system" }} role={"assistant"} />
@@ -242,7 +244,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${USER_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`py-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon
@@ -266,7 +268,7 @@ export default function DefaultChatContainer() {
         className={`flex justify-center items-end w-full ${AI_BACKGROUND_COLOR}`}
       >
         <div
-          className={`py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
+          className={`py-6 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col`}
         >
           <div className="flex gap-x-5">
             <Jazzicon size={36} user={{ uid: "system" }} role={"assistant"} />
@@ -283,14 +285,14 @@ export default function DefaultChatContainer() {
                   target="_blank"
                   className="mt-5 w-fit transition-all duration-300 border border-slate-200 px-4 py-2 rounded-lg text-white text-sm items-center flex gap-x-2 hover:bg-slate-200 hover:text-slate-800 focus:ring-gray-800"
                 >
-                  <GitHub className="h-4 w-4" />
+                  <GithubLogo className="h-4 w-4" />
                   <p>Star on GitHub</p>
                 </a>
                 <a
                   href={paths.mailToMintplex()}
                   className="mt-5 w-fit transition-all duration-300 border border-slate-200 px-4 py-2 rounded-lg text-white text-sm items-center flex gap-x-2 hover:bg-slate-200 hover:text-slate-800 focus:ring-gray-800"
                 >
-                  <Mail className="h-4 w-4" />
+                  <EnvelopeSimple className="h-4 w-4" />
                   <p>Contact Mintplex Labs</p>
                 </a>
               </div>
@@ -329,28 +331,28 @@ export default function DefaultChatContainer() {
   return (
     <div
       style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-      className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full md:min-w-[82%] h-full overflow-y-scroll"
+      className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
     >
       {isMobile && <SidebarMobileHeader />}
       {fetchedMessages.length === 0
         ? mockMsgs.map((content, i) => {
-          return <React.Fragment key={i}>{content}</React.Fragment>;
-        })
+            return <React.Fragment key={i}>{content}</React.Fragment>;
+          })
         : fetchedMessages.map((fetchedMessage, i) => {
-          return (
-            <React.Fragment key={i}>
-              <ChatBubble
-                message={
-                  fetchedMessage.user === ""
-                    ? fetchedMessage.response
-                    : fetchedMessage.user
-                }
-                type={fetchedMessage.user === "" ? "response" : "user"}
-                popMsg={popMsg}
-              />
-            </React.Fragment>
-          );
-        })}
+            return (
+              <React.Fragment key={i}>
+                <ChatBubble
+                  message={
+                    fetchedMessage.user === ""
+                      ? fetchedMessage.response
+                      : fetchedMessage.user
+                  }
+                  type={fetchedMessage.user === "" ? "response" : "user"}
+                  popMsg={popMsg}
+                />
+              </React.Fragment>
+            );
+          })}
       {showingNewWsModal && <NewWorkspaceModal hideModal={hideNewWsModal} />}
     </div>
   );

@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import Sidebar, {
-  SidebarMobileHeader,
-} from "../../../components/SettingsSidebar";
+import Sidebar, { SidebarMobileHeader } from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
 import * as Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Mail } from "react-feather";
-import usePrefersDarkMode from "../../../hooks/usePrefersDarkMode";
-import Admin from "../../../models/admin";
+import { EnvelopeSimple } from "@phosphor-icons/react";
+import usePrefersDarkMode from "@/hooks/usePrefersDarkMode";
+import Admin from "@/models/admin";
 import InviteRow from "./InviteRow";
 import NewInviteModal, { NewInviteModalId } from "./NewInviteModal";
 
@@ -17,7 +15,7 @@ export default function AdminInvites() {
       {!isMobile && <Sidebar />}
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient md:min-w-[82%] p-[18px] h-full overflow-y-scroll"
+        className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
       >
         {isMobile && <SidebarMobileHeader />}
         <div className="flex flex-col w-full px-1 md:px-20 md:py-12 py-16">
@@ -30,7 +28,7 @@ export default function AdminInvites() {
                 }
                 className="border border-slate-200 px-4 py-1 rounded-lg text-slate-200 text-sm items-center flex gap-x-2 hover:bg-slate-200 hover:text-slate-800"
               >
-                <Mail className="h-4 w-4" /> Create Invite Link
+                <EnvelopeSimple className="h-4 w-4" /> Create Invite Link
               </button>
             </div>
             <p className="text-sm font-base text-white text-opacity-60">

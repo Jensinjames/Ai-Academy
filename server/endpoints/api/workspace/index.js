@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require("uuid");
 const { Document } = require("../../../models/documents");
 const { Telemetry } = require("../../../models/telemetry");
 const { DocumentVectors } = require("../../../models/vectors");
@@ -64,6 +65,7 @@ function apiWorkspaceEndpoints(app) {
       await Telemetry.sendTelemetry("workspace_created", {
         multiUserMode: multiUserMode(response),
         LLMSelection: process.env.LLM_PROVIDER || "openai",
+        Embedder: process.env.EMBEDDING_ENGINE || "inherit",
         VectorDbSelection: process.env.VECTOR_DB || "pinecone",
       });
       response.status(200).json({ workspace, message });
@@ -487,6 +489,7 @@ function apiWorkspaceEndpoints(app) {
         const result = await chatWithWorkspace(workspace, message, mode);
         await Telemetry.sendTelemetry("sent_chat", {
           LLMSelection: process.env.LLM_PROVIDER || "openai",
+          Embedder: process.env.EMBEDDING_ENGINE || "inherit",
           VectorDbSelection: process.env.VECTOR_DB || "pinecone",
         });
         response.status(200).json({ ...result });

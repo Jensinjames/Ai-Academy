@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
-import Sidebar, {
-  SidebarMobileHeader,
-} from "../../../components/SettingsSidebar";
+import Sidebar, { SidebarMobileHeader } from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
 import * as Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { PlusCircle } from "react-feather";
-import Admin from "../../../models/admin";
+import { PlusCircle } from "@phosphor-icons/react";
+import Admin from "@/models/admin";
 import ApiKeyRow from "./ApiKeyRow";
 import NewApiKeyModal, { NewApiKeyModalId } from "./NewApiKeyModal";
-import paths from "../../../utils/paths";
-import { userFromStorage } from "../../../utils/request";
-import System from "../../../models/system";
+import paths from "@/utils/paths";
+import { userFromStorage } from "@/utils/request";
+import System from "@/models/system";
 
 export default function AdminApiKeys() {
   return (
@@ -19,7 +17,7 @@ export default function AdminApiKeys() {
       {!isMobile && <Sidebar />}
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient md:min-w-[82%] p-[18px] h-full overflow-y-scroll"
+        className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
       >
         {isMobile && <SidebarMobileHeader />}
         <div className="flex flex-col w-full px-1 md:px-20 md:py-12 py-16">

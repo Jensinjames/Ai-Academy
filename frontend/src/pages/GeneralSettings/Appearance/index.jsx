@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from "react";
-import Sidebar, {
-  SidebarMobileHeader,
-} from "../../../components/SettingsSidebar";
+import Sidebar, { SidebarMobileHeader } from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
-import Admin from "../../../models/admin";
-import AnythingLLM from "../../../media/logo/anything-llm.png";
-import useLogo from "../../../hooks/useLogo";
-import System from "../../../models/system";
-import EditingChatBubble from "../../../components/EditingChatBubble";
-import showToast from "../../../utils/toast";
+import Admin from "@/models/admin";
+import AnythingLLM from "@/media/logo/anything-llm.png";
+import useLogo from "@/hooks/useLogo";
+import System from "@/models/system";
+import EditingChatBubble from "@/components/EditingChatBubble";
+import showToast from "@/utils/toast";
 import { Plus } from "@phosphor-icons/react";
 
 export default function Appearance() {
-  const { logo: _initLogo } = useLogo();
+  const { logo: _initLogo, setLogo: _setLogo } = useLogo();
   const [logo, setLogo] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -51,6 +49,9 @@ export default function Appearance() {
       return;
     }
 
+    const logoURL = await System.fetchLogo();
+    _setLogo(logoURL);
+
     showToast("Image uploaded successfully.", "success");
     setIsDefaultLogo(false);
   };
@@ -68,6 +69,9 @@ export default function Appearance() {
       setIsDefaultLogo(false);
       return;
     }
+
+    const logoURL = await System.fetchLogo();
+    _setLogo(logoURL);
 
     showToast("Image successfully removed.", "success");
   };
@@ -113,7 +117,7 @@ export default function Appearance() {
       {!isMobile && <Sidebar />}
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient md:min-w-[82%] p-[18px] h-full overflow-y-scroll"
+        className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
       >
         {isMobile && <SidebarMobileHeader />}
         <div className="flex flex-col w-full px-1 md:px-20 md:py-12 py-16">
@@ -184,7 +188,7 @@ export default function Appearance() {
           </div>
           <div className="mb-6">
             <div className="flex flex-col gap-y-2">
-              <h2 className="leading-tight font-medium text-black dark:text-white">
+              <h2 className="leading-tight font-medium text-white">
                 Custom Messages
               </h2>
               <p className="text-sm font-base text-white/60">
@@ -238,7 +242,7 @@ export default function Appearance() {
             {hasChanges && (
               <div className="flex justify-center py-6">
                 <button
-                  className="ml-4 cursor-pointer text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                  className="transition-all duration-300 border border-slate-200 px-4 py-2 rounded-lg text-white text-sm items-center flex gap-x-2 hover:bg-slate-200 hover:text-slate-800 focus:ring-gray-800"
                   onClick={handleMessageSave}
                 >
                   Save Messages

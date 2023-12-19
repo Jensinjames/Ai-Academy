@@ -2,8 +2,11 @@ const { QdrantClient } = require("@qdrant/js-client-rest");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { storeVectorResult, cachedVectorInformation } = require("../../files");
 const { v4: uuidv4 } = require("uuid");
-const { toChunks, getLLMProvider } = require("../../helpers");
-const { chatPrompt } = require("../../chats");
+const {
+  toChunks,
+  getLLMProvider,
+  getEmbeddingEngineSelection,
+} = require("../../helpers");
 
 const QDrant = {
   name: "QDrant",
@@ -46,24 +49,33 @@ const QDrant = {
     const namespace = await this.namespace(client, _namespace);
     return namespace?.vectorCount || 0;
   },
-  similarityResponse: async function (_client, namespace, queryVector) {
+  similarityResponse: async function (
+    _client,
+    namespace,
+    queryVector,
+    similarityThreshold = 0.25
+  ) {
     const { client } = await this.connect();
     const result = {
       contextTexts: [],
       sourceDocuments: [],
+      scores: [],
     };
 
     const responses = await client.search(namespace, {
       vector: queryVector,
       limit: 4,
+      with_payload: true,
     });
 
     responses.forEach((response) => {
+      if (response.score < similarityThreshold) return;
       result.contextTexts.push(response?.payload?.text || "");
       result.sourceDocuments.push({
         ...(response?.payload || {}),
         id: response.id,
       });
+      result.scores.push(response.score);
     });
 
     return result;
@@ -166,7 +178,8 @@ const QDrant = {
       // because we then cannot atomically control our namespace to granularly find/remove documents
       // from vectordb.
       const textSplitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
+        chunkSize:
+          getEmbeddingEngineSelection()?.embeddingMaxChunkLength || 1_000,
         chunkOverlap: 20,
       });
       const textChunks = await textSplitter.splitText(pageContent);
@@ -201,8 +214,8 @@ const QDrant = {
           documentVectors.push({ docId, vectorId: vectorRecord.id });
         }
       } else {
-        console.error(
-          "Could not use OpenAI to embed document chunks! This document will not be recorded."
+        throw new Error(
+          "Could not embed document chunks! This document will not be recorded."
         );
       }
 
@@ -259,94 +272,38 @@ const QDrant = {
     await DocumentVectors.deleteIds(indexes);
     return true;
   },
-  query: async function (reqBody = {}) {
-    const { namespace = null, input, workspace = {} } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
+  performSimilaritySearch: async function ({
+    namespace = null,
+    input = "",
+    LLMConnector = null,
+    similarityThreshold = 0.25,
+  }) {
+    if (!namespace || !input || !LLMConnector)
+      throw new Error("Invalid request to performSimilaritySearch.");
 
     const { client } = await this.connect();
     if (!(await this.namespaceExists(client, namespace))) {
       return {
-        response: null,
+        contextTexts: [],
         sources: [],
         message: "Invalid query - no documents found for workspace!",
       };
     }
 
-    const LLMConnector = getLLMProvider();
     const queryVector = await LLMConnector.embedTextInput(input);
     const { contextTexts, sourceDocuments } = await this.similarityResponse(
       client,
       namespace,
-      queryVector
+      queryVector,
+      similarityThreshold
     );
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-    Context:
-    ${contextTexts
-      .map((text, i) => {
-        return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-      })
-      .join("")}`,
-    };
-    const memory = [prompt, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
+
+    const sources = sourceDocuments.map((metadata, i) => {
+      return { ...metadata, text: contextTexts[i] };
     });
-
     return {
-      response: responseText,
-      sources: this.curateSources(sourceDocuments),
-      message: false,
-    };
-  },
-  // This implementation of chat uses the chat history and modifies the system prompt at execution
-  // this is improved over the regular langchain implementation so that chats do not directly modify embeddings
-  // because then multi-user support will have all conversations mutating the base vector collection to which then
-  // the only solution is replicating entire vector databases per user - which will very quickly consume space on VectorDbs
-  chat: async function (reqBody = {}) {
-    const {
-      namespace = null,
-      input,
-      workspace = {},
-      chatHistory = [],
-    } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
-
-    const { client } = await this.connect();
-    if (!(await this.namespaceExists(client, namespace))) {
-      return {
-        response: null,
-        sources: [],
-        message: "Invalid query - no documents found for workspace!",
-      };
-    }
-
-    const LLMConnector = getLLMProvider();
-    const queryVector = await LLMConnector.embedTextInput(input);
-    const { contextTexts, sourceDocuments } = await this.similarityResponse(
-      client,
-      namespace,
-      queryVector
-    );
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-    Context:
-    ${contextTexts
-      .map((text, i) => {
-        return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-      })
-      .join("")}`,
-    };
-    const memory = [prompt, ...chatHistory, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
-    });
-
-    return {
-      response: responseText,
-      sources: this.curateSources(sourceDocuments),
+      contextTexts,
+      sources: this.curateSources(sources),
       message: false,
     };
   },
@@ -385,8 +342,11 @@ const QDrant = {
     const documents = [];
     for (const source of sources) {
       if (Object.keys(source).length > 0) {
+        const metadata = source.hasOwnProperty("metadata")
+          ? source.metadata
+          : source;
         documents.push({
-          ...source,
+          ...metadata,
         });
       }
     }

@@ -1,102 +1,129 @@
 import React, { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
-import { ContextWrapper } from "./AuthContext";
-import PrivateRoute, { AdminRoute } from "./components/PrivateRoute";
+import { ContextWrapper } from "@/AuthContext";
+import PrivateRoute, {
+  AdminRoute,
+  ManagerRoute,
+} from "@/components/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Login from "./pages/Login";
+import Login from "@/pages/Login";
+import { PfpProvider } from "./PfpContext";
+import { LogoProvider } from "./LogoContext";
 
-const Main = lazy(() => import("./pages/Main"));
-const InvitePage = lazy(() => import("./pages/Invite"));
-const WorkspaceChat = lazy(() => import("./pages/WorkspaceChat"));
-const AdminUsers = lazy(() => import("./pages/Admin/Users"));
-const AdminInvites = lazy(() => import("./pages/Admin/Invitations"));
-const AdminWorkspaces = lazy(() => import("./pages/Admin/Workspaces"));
-const AdminChats = lazy(() => import("./pages/Admin/Chats"));
-const AdminSystem = lazy(() => import("./pages/Admin/System"));
+const Main = lazy(() => import("@/pages/Main"));
+const InvitePage = lazy(() => import("@/pages/Invite"));
+const WorkspaceChat = lazy(() => import("@/pages/WorkspaceChat"));
+const AdminUsers = lazy(() => import("@/pages/Admin/Users"));
+const AdminInvites = lazy(() => import("@/pages/Admin/Invitations"));
+const AdminWorkspaces = lazy(() => import("@/pages/Admin/Workspaces"));
+const AdminSystem = lazy(() => import("@/pages/Admin/System"));
+const GeneralChats = lazy(() => import("@/pages/GeneralSettings/Chats"));
 const GeneralAppearance = lazy(() =>
-  import("./pages/GeneralSettings/Appearance")
+  import("@/pages/GeneralSettings/Appearance")
 );
-const GeneralApiKeys = lazy(() => import("./pages/GeneralSettings/ApiKeys"));
-
+const GeneralApiKeys = lazy(() => import("@/pages/GeneralSettings/ApiKeys"));
 const GeneralLLMPreference = lazy(() =>
-  import("./pages/GeneralSettings/LLMPreference")
+  import("@/pages/GeneralSettings/LLMPreference")
+);
+const GeneralEmbeddingPreference = lazy(() =>
+  import("@/pages/GeneralSettings/EmbeddingPreference")
 );
 const GeneralVectorDatabase = lazy(() =>
-  import("./pages/GeneralSettings/VectorDatabase")
+  import("@/pages/GeneralSettings/VectorDatabase")
 );
 const GeneralExportImport = lazy(() =>
-  import("./pages/GeneralSettings/ExportImport")
+  import("@/pages/GeneralSettings/ExportImport")
 );
-const GeneralSecurity = lazy(() => import("./pages/GeneralSettings/Security"));
-
-const OnboardingFlow = lazy(() => import("./pages/OnboardingFlow"));
+const GeneralSecurity = lazy(() => import("@/pages/GeneralSettings/Security"));
+const DataConnectors = lazy(() =>
+  import("@/pages/GeneralSettings/DataConnectors")
+);
+const DataConnectorSetup = lazy(() =>
+  import("@/pages/GeneralSettings/DataConnectors/Connectors")
+);
+const OnboardingFlow = lazy(() => import("@/pages/OnboardingFlow"));
 
 export default function App() {
   return (
     <Suspense fallback={<div />}>
       <ContextWrapper>
-        <Routes>
-          <Route path="/" element={<PrivateRoute Component={Main} />} />
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/workspace/:slug"
-            element={<PrivateRoute Component={WorkspaceChat} />}
-          />
-          <Route path="/accept-invite/:code" element={<InvitePage />} />
+        <LogoProvider>
+          <PfpProvider>
+            <Routes>
+              <Route path="/" element={<PrivateRoute Component={Main} />} />
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/workspace/:slug"
+                element={<PrivateRoute Component={WorkspaceChat} />}
+              />
+              <Route path="/accept-invite/:code" element={<InvitePage />} />
 
-          {/* General Routes */}
-          <Route
-            path="/general/llm-preference"
-            element={<PrivateRoute Component={GeneralLLMPreference} />}
-          />
-          <Route
-            path="/general/vector-database"
-            element={<PrivateRoute Component={GeneralVectorDatabase} />}
-          />
-          <Route
-            path="/general/export-import"
-            element={<PrivateRoute Component={GeneralExportImport} />}
-          />
-          <Route
-            path="/general/security"
-            element={<PrivateRoute Component={GeneralSecurity} />}
-          />
-          <Route
-            path="/general/appearance"
-            element={<PrivateRoute Component={GeneralAppearance} />}
-          />
-          <Route
-            path="/general/api-keys"
-            element={<PrivateRoute Component={GeneralApiKeys} />}
-          />
+              {/* Admin */}
+              <Route
+                path="/settings/llm-preference"
+                element={<AdminRoute Component={GeneralLLMPreference} />}
+              />
+              <Route
+                path="/settings/embedding-preference"
+                element={<AdminRoute Component={GeneralEmbeddingPreference} />}
+              />
+              <Route
+                path="/settings/vector-database"
+                element={<AdminRoute Component={GeneralVectorDatabase} />}
+              />
+              {/* Manager */}
+              <Route
+                path="/settings/export-import"
+                element={<ManagerRoute Component={GeneralExportImport} />}
+              />
+              <Route
+                path="/settings/security"
+                element={<ManagerRoute Component={GeneralSecurity} />}
+              />
+              <Route
+                path="/settings/appearance"
+                element={<ManagerRoute Component={GeneralAppearance} />}
+              />
+              <Route
+                path="/settings/api-keys"
+                element={<ManagerRoute Component={GeneralApiKeys} />}
+              />
+              <Route
+                path="/settings/workspace-chats"
+                element={<ManagerRoute Component={GeneralChats} />}
+              />
+              <Route
+                path="/settings/system-preferences"
+                element={<ManagerRoute Component={AdminSystem} />}
+              />
+              <Route
+                path="/settings/invites"
+                element={<ManagerRoute Component={AdminInvites} />}
+              />
+              <Route
+                path="/settings/users"
+                element={<ManagerRoute Component={AdminUsers} />}
+              />
+              <Route
+                path="/settings/workspaces"
+                element={<ManagerRoute Component={AdminWorkspaces} />}
+              />
+              <Route
+                path="/settings/data-connectors"
+                element={<ManagerRoute Component={DataConnectors} />}
+              />
+              <Route
+                path="/settings/data-connectors/:connector"
+                element={<ManagerRoute Component={DataConnectorSetup} />}
+              />
 
-          {/* Admin Routes */}
-          <Route
-            path="/admin/system-preferences"
-            element={<AdminRoute Component={AdminSystem} />}
-          />
-          <Route
-            path="/admin/invites"
-            element={<AdminRoute Component={AdminInvites} />}
-          />
-          <Route
-            path="/admin/users"
-            element={<AdminRoute Component={AdminUsers} />}
-          />
-          <Route
-            path="/admin/workspaces"
-            element={<AdminRoute Component={AdminWorkspaces} />}
-          />
-          <Route
-            path="/admin/workspace-chats"
-            element={<AdminRoute Component={AdminChats} />}
-          />
-
-          {/* Onboarding Flow */}
-          <Route path="/onboarding" element={<OnboardingFlow />} />
-        </Routes>
-        <ToastContainer />
+              {/* Onboarding Flow */}
+              <Route path="/onboarding" element={<OnboardingFlow />} />
+            </Routes>
+            <ToastContainer />
+          </PfpProvider>
+        </LogoProvider>
       </ContextWrapper>
     </Suspense>
   );

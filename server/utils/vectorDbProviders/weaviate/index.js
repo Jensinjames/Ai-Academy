@@ -2,8 +2,11 @@ const { default: weaviate } = require("weaviate-ts-client");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { storeVectorResult, cachedVectorInformation } = require("../../files");
 const { v4: uuidv4 } = require("uuid");
-const { toChunks, getLLMProvider } = require("../../helpers");
-const { chatPrompt } = require("../../chats");
+const {
+  toChunks,
+  getLLMProvider,
+  getEmbeddingEngineSelection,
+} = require("../../helpers");
 const { camelCase } = require("../../helpers/camelcase");
 
 const Weaviate = {
@@ -73,10 +76,16 @@ const Weaviate = {
       return 0;
     }
   },
-  similarityResponse: async function (client, namespace, queryVector) {
+  similarityResponse: async function (
+    client,
+    namespace,
+    queryVector,
+    similarityThreshold = 0.25
+  ) {
     const result = {
       contextTexts: [],
       sourceDocuments: [],
+      scores: [],
     };
 
     const weaviateClass = await this.namespace(client, namespace);
@@ -84,7 +93,7 @@ const Weaviate = {
     const queryResponse = await client.graphql
       .get()
       .withClassName(camelCase(namespace))
-      .withFields(`${fields} _additional { id }`)
+      .withFields(`${fields} _additional { id certainty }`)
       .withNearVector({ vector: queryVector })
       .withLimit(4)
       .do();
@@ -94,11 +103,13 @@ const Weaviate = {
       // In Weaviate we have to pluck id from _additional and spread it into the rest
       // of the properties.
       const {
-        _additional: { id },
+        _additional: { id, certainty },
         ...rest
       } = response;
+      if (certainty < similarityThreshold) return;
       result.contextTexts.push(rest.text);
       result.sourceDocuments.push({ ...rest, id });
+      result.scores.push(certainty);
     });
 
     return result;
@@ -230,7 +241,8 @@ const Weaviate = {
       // because we then cannot atomically control our namespace to granularly find/remove documents
       // from vectordb.
       const textSplitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
+        chunkSize:
+          getEmbeddingEngineSelection()?.embeddingMaxChunkLength || 1_000,
         chunkOverlap: 20,
       });
       const textChunks = await textSplitter.splitText(pageContent);
@@ -267,8 +279,8 @@ const Weaviate = {
           documentVectors.push({ docId, vectorId: vectorRecord.id });
         }
       } else {
-        console.error(
-          "Could not use OpenAI to embed document chunks! This document will not be recorded."
+        throw new Error(
+          "Could not embed document chunks! This document will not be recorded."
         );
       }
 
@@ -331,95 +343,38 @@ const Weaviate = {
     await DocumentVectors.deleteIds(indexes);
     return true;
   },
-  query: async function (reqBody = {}) {
-    const { namespace = null, input, workspace = {} } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
+  performSimilaritySearch: async function ({
+    namespace = null,
+    input = "",
+    LLMConnector = null,
+    similarityThreshold = 0.25,
+  }) {
+    if (!namespace || !input || !LLMConnector)
+      throw new Error("Invalid request to performSimilaritySearch.");
 
     const { client } = await this.connect();
     if (!(await this.namespaceExists(client, namespace))) {
       return {
-        response: null,
+        contextTexts: [],
         sources: [],
         message: "Invalid query - no documents found for workspace!",
       };
     }
 
-    const LLMConnector = getLLMProvider();
     const queryVector = await LLMConnector.embedTextInput(input);
     const { contextTexts, sourceDocuments } = await this.similarityResponse(
       client,
       namespace,
-      queryVector
+      queryVector,
+      similarityThreshold
     );
 
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-    Context:
-    ${contextTexts
-      .map((text, i) => {
-        return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-      })
-      .join("")}`,
-    };
-    const memory = [prompt, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
+    const sources = sourceDocuments.map((metadata, i) => {
+      return { ...metadata, text: contextTexts[i] };
     });
-
     return {
-      response: responseText,
-      sources: this.curateSources(sourceDocuments),
-      message: false,
-    };
-  },
-  // This implementation of chat uses the chat history and modifies the system prompt at execution
-  // this is improved over the regular langchain implementation so that chats do not directly modify embeddings
-  // because then multi-user support will have all conversations mutating the base vector collection to which then
-  // the only solution is replicating entire vector databases per user - which will very quickly consume space on VectorDbs
-  chat: async function (reqBody = {}) {
-    const {
-      namespace = null,
-      input,
-      workspace = {},
-      chatHistory = [],
-    } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
-
-    const { client } = await this.connect();
-    if (!(await this.namespaceExists(client, namespace))) {
-      return {
-        response: null,
-        sources: [],
-        message: "Invalid query - no documents found for workspace!",
-      };
-    }
-
-    const LLMConnector = getLLMProvider();
-    const queryVector = await LLMConnector.embedTextInput(input);
-    const { contextTexts, sourceDocuments } = await this.similarityResponse(
-      client,
-      namespace,
-      queryVector
-    );
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-    Context:
-    ${contextTexts
-      .map((text, i) => {
-        return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-      })
-      .join("")}`,
-    };
-    const memory = [prompt, ...chatHistory, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
-    });
-
-    return {
-      response: responseText,
-      sources: this.curateSources(sourceDocuments),
+      contextTexts,
+      sources: this.curateSources(sources),
       message: false,
     };
   },
@@ -455,7 +410,10 @@ const Weaviate = {
     const documents = [];
     for (const source of sources) {
       if (Object.keys(source).length > 0) {
-        documents.push(source);
+        const metadata = source.hasOwnProperty("metadata")
+          ? source.metadata
+          : source;
+        documents.push({ ...metadata });
       }
     }
 

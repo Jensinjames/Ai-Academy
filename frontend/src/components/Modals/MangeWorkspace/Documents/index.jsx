@@ -8,7 +8,11 @@ import WorkspaceDirectory from "./WorkspaceDirectory";
 
 const COST_PER_TOKEN = 0.0004;
 
-export default function DocumentSettings({ workspace, fileTypes }) {
+export default function DocumentSettings({
+  workspace,
+  fileTypes,
+  systemSettings,
+}) {
   const [highlightWorkspace, setHighlightWorkspace] = useState(false);
   const [availableDocs, setAvailableDocs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,13 +95,13 @@ export default function DocumentSettings({ workspace, fileTypes }) {
     setHighlightWorkspace(false);
     await Workspace.modifyEmbeddings(workspace.slug, changesToSend)
       .then((res) => {
-        if (res && res.workspace) {
-          showToast("Workspace updated successfully.", "success", {
-            clear: true,
-          });
-        } else {
-          showToast("Workspace update failed.", "error", { clear: true });
+        if (!!res.message) {
+          showToast(`Error: ${res.message}`, "error", { clear: true });
+          return;
         }
+        showToast("Workspace updated successfully.", "success", {
+          clear: true,
+        });
       })
       .catch((error) => {
         showToast(`Workspace update failed: ${error}`, "error", {
@@ -135,8 +139,15 @@ export default function DocumentSettings({ workspace, fileTypes }) {
       }
     });
 
-    const dollarAmount = (totalTokenCount / 1000) * COST_PER_TOKEN;
-    setEmbeddingsCost(dollarAmount);
+    // Do not do cost estimation unless the embedding engine is OpenAi.
+    if (
+      !systemSettings?.EmbeddingEngine ||
+      systemSettings.EmbeddingEngine === "openai"
+    ) {
+      const dollarAmount = (totalTokenCount / 1000) * COST_PER_TOKEN;
+      setEmbeddingsCost(dollarAmount);
+    }
+
     setMovedItems([...movedItems, ...newMovedItems]);
 
     let newAvailableDocs = JSON.parse(JSON.stringify(availableDocs));

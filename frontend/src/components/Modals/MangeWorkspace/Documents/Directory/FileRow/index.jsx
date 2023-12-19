@@ -2,10 +2,10 @@ import { useState } from "react";
 import {
   formatDate,
   getFileExtension,
-  truncate,
-} from "../../../../../../utils/directories";
+  middleTruncate,
+} from "@/utils/directories";
 import { File, Trash } from "@phosphor-icons/react";
-import System from "../../../../../../models/system";
+import System from "@/models/system";
 import debounce from "lodash.debounce";
 
 export default function FileRow({
@@ -33,7 +33,7 @@ export default function FileRow({
     try {
       setLoading(true);
       setLoadingMessage("This may take a while for large documents");
-      await System.deleteDocument(`${folderName}/${item.name}`, item);
+      await System.deleteDocument(`${folderName}/${item.name}`);
       await fetchKeys(true);
     } catch (error) {
       console.error("Failed to delete the document:", error);
@@ -60,23 +60,26 @@ export default function FileRow({
         selected ? "bg-sky-500/20" : ""
       } ${expanded ? "bg-sky-500/10" : ""}`}`}
     >
-      <div className="col-span-4 flex gap-x-[4px] items-center">
+      <div className="pl-2 col-span-6 flex gap-x-[4px] items-center">
         <div
-          className="w-3 h-3 rounded border-[1px] border-white flex justify-center items-center cursor-pointer"
+          className="shrink-0 w-3 h-3 rounded border-[1px] border-white flex justify-center items-center cursor-pointer"
           role="checkbox"
           aria-checked={selected}
           tabIndex={0}
         >
           {selected && <div className="w-2 h-2 bg-white rounded-[2px]" />}
         </div>
-        <File className="text-base font-bold w-4 h-4 mr-[3px]" weight="fill" />
+        <File
+          className="shrink-0 text-base font-bold w-4 h-4 mr-[3px]"
+          weight="fill"
+        />
         <div
           className="relative"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
           <p className="whitespace-nowrap overflow-hidden">
-            {truncate(item.title, 17)}
+            {middleTruncate(item.title, 17)}
           </p>
           {showTooltip && (
             <div className="absolute left-0 bg-white text-black p-1.5 rounded shadow-lg whitespace-nowrap">
@@ -88,7 +91,6 @@ export default function FileRow({
       <p className="col-span-2 pl-3.5 whitespace-nowrap">
         {formatDate(item?.published)}
       </p>
-      <p className="col-span-2 pl-3">{item?.size || "---"}</p>
       <p className="col-span-2 pl-2 uppercase">{getFileExtension(item.url)}</p>
       <div className="col-span-2 flex justify-end items-center">
         {item?.cached && (

@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import Sidebar, {
-  SidebarMobileHeader,
-} from "../../../components/SettingsSidebar";
+import Sidebar, { SidebarMobileHeader } from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
 import * as Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { UserPlus } from "react-feather";
-import Admin from "../../../models/admin";
+import { UserPlus } from "@phosphor-icons/react";
+import Admin from "@/models/admin";
 import UserRow from "./UserRow";
-import useUser from "../../../hooks/useUser";
+import useUser from "@/hooks/useUser";
 import NewUserModal, { NewUserModalId } from "./NewUserModal";
 
 export default function AdminUsers() {
@@ -17,7 +15,7 @@ export default function AdminUsers() {
       {!isMobile && <Sidebar />}
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient md:min-w-[82%] p-[18px] h-full overflow-y-scroll"
+        className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
       >
         {isMobile && <SidebarMobileHeader />}
         <div className="flex flex-col w-full px-1 md:px-20 md:py-12 py-16">
@@ -98,5 +96,37 @@ function UsersContainer() {
         ))}
       </tbody>
     </table>
+  );
+}
+
+const ROLE_HINT = {
+  default: [
+    "Can only send chats with workspaces they are added to by admin or managers.",
+    "Cannot modify any settings at all.",
+  ],
+  manager: [
+    "Can view all workspaces and modify all settings.",
+    "Cannot modify LLM, vectorDB, embedding, or other connections.",
+  ],
+  admin: [
+    "Highest user level privilege.",
+    "Can see and do everything across the system.",
+  ],
+};
+
+export function RoleHintDisplay({ role }) {
+  return (
+    <div className="flex flex-col gap-y-1 py-1 pb-4">
+      <p className="text-white/60 font-semibold text-sm">Permissions</p>
+      <ul className="flex flex-col gap-y-1 list-disc px-4">
+        {ROLE_HINT[role ?? "default"].map((hints, i) => {
+          return (
+            <li key={i} className="text-xs text-white/60">
+              {hints}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

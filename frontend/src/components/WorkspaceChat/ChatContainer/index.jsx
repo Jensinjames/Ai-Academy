@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import ChatHistory from "./ChatHistory";
 import PromptInput from "./PromptInput";
-import Workspace from "../../../models/workspace";
-import handleChat from "../../../utils/chat";
+import Workspace from "@/models/workspace";
+import handleChat from "@/utils/chat";
 import { isMobile } from "react-device-detect";
 import { SidebarMobileHeader } from "../../Sidebar";
 
@@ -48,19 +48,36 @@ export default function ChatContainer({ workspace, knownHistory = [] }) {
         return false;
       }
 
-      const chatResult = await Workspace.sendChat(
+      // TODO: Delete this snippet once we have streaming stable.
+      // const chatResult = await Workspace.sendChat(
+      //   workspace,
+      //   promptMessage.userMessage,
+      //   window.localStorage.getItem(`workspace_chat_mode_${workspace.slug}`) ??
+      //   "chat",
+      // )
+      // handleChat(
+      //   chatResult,
+      //   setLoadingResponse,
+      //   setChatHistory,
+      //   remHistory,
+      //   _chatHistory
+      // )
+
+      await Workspace.streamChat(
         workspace,
         promptMessage.userMessage,
         window.localStorage.getItem(`workspace_chat_mode_${workspace.slug}`) ??
-          "chat"
+          "chat",
+        (chatResult) =>
+          handleChat(
+            chatResult,
+            setLoadingResponse,
+            setChatHistory,
+            remHistory,
+            _chatHistory
+          )
       );
-      handleChat(
-        chatResult,
-        setLoadingResponse,
-        setChatHistory,
-        remHistory,
-        _chatHistory
-      );
+      return;
     }
     loadingResponse === true && fetchReply();
   }, [loadingResponse, chatHistory, workspace]);
@@ -68,7 +85,7 @@ export default function ChatContainer({ workspace, knownHistory = [] }) {
   return (
     <div
       style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-      className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full md:min-w-[82%] h-full overflow-y-scroll"
+      className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
     >
       {isMobile && <SidebarMobileHeader />}
       <div className="flex flex-col h-full w-full md:mt-0 mt-[40px]">

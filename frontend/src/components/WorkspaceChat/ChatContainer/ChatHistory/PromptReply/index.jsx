@@ -1,7 +1,7 @@
 import { forwardRef, memo } from "react";
-import { AlertTriangle } from "react-feather";
+import { Warning } from "@phosphor-icons/react";
 import Jazzicon from "../../../../UserIcon";
-import renderMarkdown from "../../../../../utils/chat/markdown";
+import renderMarkdown from "@/utils/chat/markdown";
 import Citations from "../Citation";
 
 const PromptReply = forwardRef(
@@ -19,7 +19,7 @@ const PromptReply = forwardRef(
           ref={ref}
           className={`flex justify-center items-end w-full ${assistantBackgroundColor}`}
         >
-          <div className="py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col">
+          <div className="py-8 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col">
             <div className="flex gap-x-5">
               <Jazzicon
                 size={36}
@@ -38,7 +38,7 @@ const PromptReply = forwardRef(
         <div
           className={`flex justify-center items-end w-full ${assistantBackgroundColor}`}
         >
-          <div className="py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col">
+          <div className="py-8 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col">
             <div className="flex gap-x-5">
               <Jazzicon
                 size={36}
@@ -48,8 +48,8 @@ const PromptReply = forwardRef(
               <span
                 className={`inline-block p-2 rounded-lg bg-red-50 text-red-500`}
               >
-                <AlertTriangle className="h-4 w-4 mb-1 inline-block" /> Could
-                not respond to message.
+                <Warning className="h-4 w-4 mb-1 inline-block" /> Could not
+                respond to message.
                 <span className="text-xs">Reason: {error || "unknown"}</span>
               </span>
             </div>
@@ -64,7 +64,7 @@ const PromptReply = forwardRef(
         ref={ref}
         className={`flex justify-center items-end w-full ${assistantBackgroundColor}`}
       >
-        <div className="py-10 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col">
+        <div className="py-8 px-4 w-full flex gap-x-5 md:max-w-[800px] flex-col">
           <div className="flex gap-x-5">
             <Jazzicon
               size={36}
@@ -72,7 +72,7 @@ const PromptReply = forwardRef(
               role="assistant"
             />
             <span
-              className={`whitespace-pre-line text-white font-normal text-sm md:text-sm flex flex-col gap-y-1 mt-2`}
+              className={`reply whitespace-pre-line text-white font-normal text-sm md:text-sm flex flex-col gap-y-1 mt-2`}
               dangerouslySetInnerHTML={{ __html: renderMarkdown(reply) }}
             />
           </div>

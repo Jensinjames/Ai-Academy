@@ -1,5 +1,7 @@
-import { API_BASE } from "../utils/constants";
-import { baseHeaders } from "../utils/request";
+import { API_BASE } from "@/utils/constants";
+import { baseHeaders } from "@/utils/request";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { v4 } from "uuid";
 
 const Workspace = {
   new: async function (data = {}) {
@@ -57,19 +59,64 @@ const Workspace = {
       .catch(() => []);
     return history;
   },
-  sendChat: async function ({ slug }, message, mode = "query") {
-    const chatResult = await fetch(`${API_BASE}/workspace/${slug}/chat`, {
+  streamChat: async function ({ slug }, message, mode = "query", handleChat) {
+    const ctrl = new AbortController();
+    await fetchEventSource(`${API_BASE}/workspace/${slug}/stream-chat`, {
       method: "POST",
       body: JSON.stringify({ message, mode }),
       headers: baseHeaders(),
-    })
-      .then((res) => res.json())
-      .catch((e) => {
-        console.error(e);
-        return null;
-      });
-
-    return chatResult;
+      signal: ctrl.signal,
+      openWhenHidden: true,
+      async onopen(response) {
+        if (response.ok) {
+          return; // everything's good
+        } else if (
+          response.status >= 400 &&
+          response.status < 500 &&
+          response.status !== 429
+        ) {
+          handleChat({
+            id: v4(),
+            type: "abort",
+            textResponse: null,
+            sources: [],
+            close: true,
+            error: `An error occurred while streaming response. Code ${response.status}`,
+          });
+          ctrl.abort();
+          throw new Error("Invalid Status code response.");
+        } else {
+          handleChat({
+            id: v4(),
+            type: "abort",
+            textResponse: null,
+            sources: [],
+            close: true,
+            error: `An error occurred while streaming response. Unknown Error.`,
+          });
+          ctrl.abort();
+          throw new Error("Unknown error");
+        }
+      },
+      async onmessage(msg) {
+        try {
+          const chatResult = JSON.parse(msg.data);
+          handleChat(chatResult);
+        } catch {}
+      },
+      onerror(err) {
+        handleChat({
+          id: v4(),
+          type: "abort",
+          textResponse: null,
+          sources: [],
+          close: true,
+          error: `An error occurred while streaming response. ${err.message}`,
+        });
+        ctrl.abort();
+        throw new Error();
+      },
+    });
   },
   all: async function () {
     const workspaces = await fetch(`${API_BASE}/workspaces`, {
@@ -110,6 +157,32 @@ const Workspace = {
 
     const data = await response.json();
     return { response, data };
+  },
+  uploadLink: async function (slug, link) {
+    const response = await fetch(`${API_BASE}/workspace/${slug}/upload-link`, {
+      method: "POST",
+      body: JSON.stringify({ link }),
+      headers: baseHeaders(),
+    });
+
+    const data = await response.json();
+    return { response, data };
+  },
+
+  // TODO: Deprecated and should be removed from frontend.
+  sendChat: async function ({ slug }, message, mode = "query") {
+    const chatResult = await fetch(`${API_BASE}/workspace/${slug}/chat`, {
+      method: "POST",
+      body: JSON.stringify({ message, mode }),
+      headers: baseHeaders(),
+    })
+      .then((res) => res.json())
+      .catch((e) => {
+        console.error(e);
+        return null;
+      });
+
+    return chatResult;
   },
 };
 

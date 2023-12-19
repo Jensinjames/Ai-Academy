@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import Sidebar, {
-  SidebarMobileHeader,
-} from "../../../components/SettingsSidebar";
+import Sidebar, { SidebarMobileHeader } from "@/components/SettingsSidebar";
 import { isMobile } from "react-device-detect";
 import * as Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { BookOpen } from "react-feather";
-import usePrefersDarkMode from "../../../hooks/usePrefersDarkMode";
-import Admin from "../../../models/admin";
+import { BookOpen } from "@phosphor-icons/react";
+import usePrefersDarkMode from "@/hooks/usePrefersDarkMode";
+import Admin from "@/models/admin";
 import WorkspaceRow from "./WorkspaceRow";
 import NewWorkspaceModal, { NewWorkspaceModalId } from "./NewWorkspaceModal";
 
@@ -17,7 +15,7 @@ export default function AdminWorkspaces() {
       {!isMobile && <Sidebar />}
       <div
         style={{ height: isMobile ? "100%" : "calc(100% - 32px)" }}
-        className="transition-all duration-500 relative md:ml-[2px] md:mr-[8px] md:my-[16px] md:rounded-[26px] bg-main-gradient md:min-w-[82%] p-[18px] h-full overflow-y-scroll"
+        className="transition-all duration-500 relative md:ml-[2px] md:mr-[16px] md:my-[16px] md:rounded-[26px] bg-main-gradient w-full h-full overflow-y-scroll border-4 border-accent"
       >
         {isMobile && <SidebarMobileHeader />}
         <div className="flex flex-col w-full px-1 md:px-20 md:py-12 py-16">

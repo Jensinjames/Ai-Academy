@@ -1,18 +1,18 @@
 import React, { memo } from "react";
 
 // How many people will be using your instance step
-function UserModeSelection({ goToStep, prevStep }) {
+function UserModeSelection({ nextStep, prevStep }) {
   const justMeClicked = () => {
-    goToStep(5);
+    nextStep("password_protection");
   };
 
   const myTeamClicked = () => {
-    goToStep(6);
+    nextStep("multi_user_mode");
   };
 
   return (
     <div>
-      <div className="flex flex-col justify-center items-center px-20 py-20">
+      <div className="flex flex-col justify-center items-center px-20 py-14">
         <div className="w-80 text-white text-center text-2xl font-base">
           How many people will be using your instance?
         </div>

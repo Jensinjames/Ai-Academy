@@ -2,8 +2,11 @@ const { ChromaClient } = require("chromadb");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { storeVectorResult, cachedVectorInformation } = require("../../files");
 const { v4: uuidv4 } = require("uuid");
-const { toChunks, getLLMProvider } = require("../../helpers");
-const { chatPrompt } = require("../../chats");
+const {
+  toChunks,
+  getLLMProvider,
+  getEmbeddingEngineSelection,
+} = require("../../helpers");
 
 const Chroma = {
   name: "Chroma",
@@ -16,10 +19,10 @@ const Chroma = {
       ...(!!process.env.CHROMA_API_HEADER && !!process.env.CHROMA_API_KEY
         ? {
             fetchOptions: {
-              headers: {
-                [process.env.CHROMA_API_HEADER || "X-Api-Key"]:
-                  process.env.CHROMA_API_KEY,
-              },
+              headers: parseAuthHeader(
+                process.env.CHROMA_API_HEADER || "X-Api-Key",
+                process.env.CHROMA_API_KEY
+              ),
             },
           }
         : {}),
@@ -49,16 +52,28 @@ const Chroma = {
     }
     return totalVectors;
   },
+  distanceToSimilarity: function (distance = null) {
+    if (distance === null || typeof distance !== "number") return 0.0;
+    if (distance >= 1.0) return 1;
+    if (distance <= 0) return 0;
+    return 1 - distance;
+  },
   namespaceCount: async function (_namespace = null) {
     const { client } = await this.connect();
     const namespace = await this.namespace(client, _namespace);
     return namespace?.vectorCount || 0;
   },
-  similarityResponse: async function (client, namespace, queryVector) {
+  similarityResponse: async function (
+    client,
+    namespace,
+    queryVector,
+    similarityThreshold = 0.25
+  ) {
     const collection = await client.getCollection({ name: namespace });
     const result = {
       contextTexts: [],
       sourceDocuments: [],
+      scores: [],
     };
 
     const response = await collection.query({
@@ -66,8 +81,14 @@ const Chroma = {
       nResults: 4,
     });
     response.ids[0].forEach((_, i) => {
+      if (
+        this.distanceToSimilarity(response.distances[0][i]) <
+        similarityThreshold
+      )
+        return;
       result.contextTexts.push(response.documents[0][i]);
       result.sourceDocuments.push(response.metadatas[0][i]);
+      result.scores.push(this.distanceToSimilarity(response.distances[0][i]));
     });
 
     return result;
@@ -158,7 +179,8 @@ const Chroma = {
       // because we then cannot atomically control our namespace to granularly find/remove documents
       // from vectordb.
       const textSplitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
+        chunkSize:
+          getEmbeddingEngineSelection()?.embeddingMaxChunkLength || 1_000,
         chunkOverlap: 20,
       });
       const textChunks = await textSplitter.splitText(pageContent);
@@ -195,8 +217,8 @@ const Chroma = {
           documentVectors.push({ docId, vectorId: vectorRecord.id });
         }
       } else {
-        console.error(
-          "Could not use OpenAI to embed document chunks! This document will not be recorded."
+        throw new Error(
+          "Could not embed document chunks! This document will not be recorded."
         );
       }
 
@@ -245,103 +267,37 @@ const Chroma = {
     await DocumentVectors.deleteIds(indexes);
     return true;
   },
-  query: async function (reqBody = {}) {
-    const { namespace = null, input, workspace = {} } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
+  performSimilaritySearch: async function ({
+    namespace = null,
+    input = "",
+    LLMConnector = null,
+    similarityThreshold = 0.25,
+  }) {
+    if (!namespace || !input || !LLMConnector)
+      throw new Error("Invalid request to performSimilaritySearch.");
 
     const { client } = await this.connect();
     if (!(await this.namespaceExists(client, namespace))) {
       return {
-        response: null,
+        contextTexts: [],
         sources: [],
         message: "Invalid query - no documents found for workspace!",
       };
     }
 
-    const LLMConnector = getLLMProvider();
     const queryVector = await LLMConnector.embedTextInput(input);
     const { contextTexts, sourceDocuments } = await this.similarityResponse(
       client,
       namespace,
-      queryVector
+      queryVector,
+      similarityThreshold
     );
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-    Context:
-    ${contextTexts
-      .map((text, i) => {
-        return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-      })
-      .join("")}`,
-    };
-    const memory = [prompt, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
-    });
 
-    // When we roll out own response we have separate metadata and texts,
-    // so for source collection we need to combine them.
     const sources = sourceDocuments.map((metadata, i) => {
       return { metadata: { ...metadata, text: contextTexts[i] } };
     });
     return {
-      response: responseText,
-      sources: this.curateSources(sources),
-      message: false,
-    };
-  },
-  // This implementation of chat uses the chat history and modifies the system prompt at execution
-  // this is improved over the regular langchain implementation so that chats do not directly modify embeddings
-  // because then multi-user support will have all conversations mutating the base vector collection to which then
-  // the only solution is replicating entire vector databases per user - which will very quickly consume space on VectorDbs
-  chat: async function (reqBody = {}) {
-    const {
-      namespace = null,
-      input,
-      workspace = {},
-      chatHistory = [],
-    } = reqBody;
-    if (!namespace || !input) throw new Error("Invalid request body");
-
-    const { client } = await this.connect();
-    if (!(await this.namespaceExists(client, namespace))) {
-      return {
-        response: null,
-        sources: [],
-        message: "Invalid query - no documents found for workspace!",
-      };
-    }
-
-    const LLMConnector = getLLMProvider();
-    const queryVector = await LLMConnector.embedTextInput(input);
-    const { contextTexts, sourceDocuments } = await this.similarityResponse(
-      client,
-      namespace,
-      queryVector
-    );
-    const prompt = {
-      role: "system",
-      content: `${chatPrompt(workspace)}
-    Context:
-    ${contextTexts
-      .map((text, i) => {
-        return `[CONTEXT ${i}]:\n${text}\n[END CONTEXT ${i}]\n\n`;
-      })
-      .join("")}`,
-    };
-    const memory = [prompt, ...chatHistory, { role: "user", content: input }];
-    const responseText = await LLMConnector.getChatCompletion(memory, {
-      temperature: workspace?.openAiTemp ?? 0.7,
-    });
-
-    // When we roll out own response we have separate metadata and texts,
-    // so for source collection we need to combine them.
-    const sources = sourceDocuments.map((metadata, i) => {
-      return { metadata: { ...metadata, text: contextTexts[i] } };
-    });
-    return {
-      response: responseText,
+      contextTexts,
       sources: this.curateSources(sources),
       message: false,
     };

@@ -36,7 +36,9 @@ const Document = {
 
   addDocuments: async function (workspace, additions = []) {
     const VectorDb = getVectorDbClass();
-    if (additions.length === 0) return;
+    if (additions.length === 0) return { failed: [], embedded: [] };
+    const embedded = [];
+    const failedToEmbed = [];
 
     for (const path of additions) {
       const data = await fileData(path);
@@ -58,11 +60,13 @@ const Document = {
       );
       if (!vectorized) {
         console.error("Failed to vectorize", path);
+        failedToEmbed.push(path);
         continue;
       }
 
       try {
         await prisma.workspace_documents.create({ data: newDoc });
+        embedded.push(path);
       } catch (error) {
         console.error(error.message);
       }
@@ -70,9 +74,10 @@ const Document = {
 
     await Telemetry.sendTelemetry("documents_embedded_in_workspace", {
       LLMSelection: process.env.LLM_PROVIDER || "openai",
+      Embedder: process.env.EMBEDDING_ENGINE || "inherit",
       VectorDbSelection: process.env.VECTOR_DB || "pinecone",
     });
-    return;
+    return { failed: failedToEmbed, embedded };
   },
 
   removeDocuments: async function (workspace, removals = []) {
@@ -101,9 +106,23 @@ const Document = {
 
     await Telemetry.sendTelemetry("documents_removed_in_workspace", {
       LLMSelection: process.env.LLM_PROVIDER || "openai",
+      Embedder: process.env.EMBEDDING_ENGINE || "inherit",
       VectorDbSelection: process.env.VECTOR_DB || "pinecone",
     });
     return true;
+  },
+
+  count: async function (clause = {}, limit = null) {
+    try {
+      const count = await prisma.workspace_documents.count({
+        where: clause,
+        ...(limit !== null ? { take: limit } : {}),
+      });
+      return count;
+    } catch (error) {
+      console.error("FAILED TO COUNT DOCUMENTS.", error.message);
+      return 0;
+    }
   },
 };
 

@@ -14,16 +14,22 @@ const SystemSettings = {
     "telemetry_id",
   ],
   currentSettings: async function () {
-    const llmProvider = process.env.LLM_PROVIDER || "openai";
-    const vectorDB = process.env.VECTOR_DB || "pinecone";
+    const llmProvider = process.env.LLM_PROVIDER;
+    const vectorDB = process.env.VECTOR_DB;
     return {
-      CanDebug: !!!process.env.NO_DEBUG,
       RequiresAuth: !!process.env.AUTH_TOKEN,
       AuthToken: !!process.env.AUTH_TOKEN,
       JWTSecret: !!process.env.JWT_SECRET,
       StorageDir: process.env.STORAGE_DIR,
       MultiUserMode: await this.isMultiUserMode(),
       VectorDB: vectorDB,
+      HasExistingEmbeddings: await this.hasEmbeddings(),
+      EmbeddingEngine: process.env.EMBEDDING_ENGINE,
+      EmbeddingBasePath: process.env.EMBEDDING_BASE_PATH,
+      EmbeddingModelPref: process.env.EMBEDDING_MODEL_PREF,
+      EmbeddingModelMaxChunkLength:
+        process.env.EMBEDDING_MODEL_MAX_CHUNK_LENGTH,
+      LocalAiApiKey: !!process.env.LOCAL_AI_API_KEY,
       ...(vectorDB === "pinecone"
         ? {
             PineConeEnvironment: process.env.PINECONE_ENVIRONMENT,
@@ -64,6 +70,51 @@ const SystemSettings = {
             AzureOpenAiKey: !!process.env.AZURE_OPENAI_KEY,
             AzureOpenAiModelPref: process.env.OPEN_MODEL_PREF,
             AzureOpenAiEmbeddingModelPref: process.env.EMBEDDING_MODEL_PREF,
+            AzureOpenAiTokenLimit: process.env.AZURE_OPENAI_TOKEN_LIMIT || 4096,
+          }
+        : {}),
+
+      ...(llmProvider === "anthropic"
+        ? {
+            AnthropicApiKey: !!process.env.ANTHROPIC_API_KEY,
+            AnthropicModelPref: process.env.ANTHROPIC_MODEL_PREF || "claude-2",
+
+            // For embedding credentials when Anthropic is selected.
+            OpenAiKey: !!process.env.OPEN_AI_KEY,
+            AzureOpenAiEndpoint: process.env.AZURE_OPENAI_ENDPOINT,
+            AzureOpenAiKey: !!process.env.AZURE_OPENAI_KEY,
+            AzureOpenAiEmbeddingModelPref: process.env.EMBEDDING_MODEL_PREF,
+          }
+        : {}),
+
+      ...(llmProvider === "lmstudio"
+        ? {
+            LMStudioBasePath: process.env.LMSTUDIO_BASE_PATH,
+            LMStudioTokenLimit: process.env.LMSTUDIO_MODEL_TOKEN_LIMIT,
+
+            // For embedding credentials when lmstudio is selected.
+            OpenAiKey: !!process.env.OPEN_AI_KEY,
+            AzureOpenAiEndpoint: process.env.AZURE_OPENAI_ENDPOINT,
+            AzureOpenAiKey: !!process.env.AZURE_OPENAI_KEY,
+            AzureOpenAiEmbeddingModelPref: process.env.EMBEDDING_MODEL_PREF,
+          }
+        : {}),
+      ...(llmProvider === "localai"
+        ? {
+            LocalAiBasePath: process.env.LOCAL_AI_BASE_PATH,
+            LocalAiModelPref: process.env.LOCAL_AI_MODEL_PREF,
+            LocalAiTokenLimit: process.env.LOCAL_AI_MODEL_TOKEN_LIMIT,
+
+            // For embedding credentials when localai is selected.
+            OpenAiKey: !!process.env.OPEN_AI_KEY,
+            AzureOpenAiEndpoint: process.env.AZURE_OPENAI_ENDPOINT,
+            AzureOpenAiKey: !!process.env.AZURE_OPENAI_KEY,
+            AzureOpenAiEmbeddingModelPref: process.env.EMBEDDING_MODEL_PREF,
+          }
+        : {}),
+      ...(llmProvider === "native"
+        ? {
+            NativeLLMModelPref: process.env.NATIVE_LLM_MODEL_PREF,
           }
         : {}),
     };
@@ -141,6 +192,17 @@ const SystemSettings = {
     try {
       const setting = await this.get({ label: "users_can_delete_workspaces" });
       return setting?.value === "true";
+    } catch (error) {
+      console.error(error.message);
+      return false;
+    }
+  },
+
+  hasEmbeddings: async function () {
+    try {
+      const { Document } = require("./documents");
+      const count = await Document.count({}, 1);
+      return count > 0;
     } catch (error) {
       console.error(error.message);
       return false;
